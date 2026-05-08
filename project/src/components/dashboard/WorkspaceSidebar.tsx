@@ -19,7 +19,8 @@ import {
   PieChart,
   Target,
   UserPlus,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -90,7 +91,8 @@ export function WorkspaceSidebar() {
 
   const menuItems = [
     { name: 'Workspace Home', href: `/workspaces/${workspaceSlug}`, icon: LayoutDashboard },
-    { name: 'Team Board', href: `/workspaces/${workspaceSlug}/tasks`, icon: Target },
+    { name: 'Tasks List', href: `/workspaces/${workspaceSlug}/tasks-list`, icon: CheckSquare },
+    { name: 'Task Management', href: `/workspaces/${workspaceSlug}/tasks`, icon: Target },
     { name: 'Team Messaging', href: `/workspaces/${workspaceSlug}/chat`, icon: MessageSquare },
     { name: 'Analytics', href: `/workspaces/${workspaceSlug}/analytics`, icon: PieChart },
     { name: 'Reports', href: `/workspaces/${workspaceSlug}/reports`, icon: FileText },

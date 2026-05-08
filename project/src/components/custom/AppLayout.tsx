@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { Search, Bell } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import Link from "next/link";
+import { AIBubble } from "@/components/chat/AIBubble";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -65,6 +66,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         {!showAnySidebar && <Footer />}
+        <AIBubble />
       </div>
     </div>
   );

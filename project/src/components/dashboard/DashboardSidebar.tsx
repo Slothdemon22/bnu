@@ -26,6 +26,7 @@ export function DashboardSidebar() {
 
   const menuItems = [
     { name: 'Dashboard', href: '/workspaces', icon: LayoutDashboard },
+    { name: 'My Tasks', href: '/tasks', icon: CheckSquare },
   ]
 
   const secondaryItems = [

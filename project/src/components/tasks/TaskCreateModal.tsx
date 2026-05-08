@@ -18,7 +18,10 @@ import {
   Layers,
   StickyNote,
   Clock,
-  Target
+  Target,
+  Mic,
+  Square,
+  Sparkles
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
@@ -58,6 +61,11 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
   const [meetingTime, setMeetingTime] = useState('') // empty means 'Anytime'
   const [workspaceRole, setWorkspaceRole] = useState('')
   
+  const [schedulingGoogle, setSchedulingGoogle] = useState(false)
+  const [googleDate, setGoogleDate] = useState('')
+  const [googleStartTime, setGoogleStartTime] = useState('')
+  const [googleEndTime, setGoogleEndTime] = useState('')
+  
   // Basic Info
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -80,9 +88,13 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
     { name: 'Initial Setup', description: '', status: 'pending', estimatedTime: '', tags: [], notes: '', attachments: [] }
   ])
   
-  // Attachments
   const [attachments, setAttachments] = useState<{ name: string, url: string }[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Dictation
+  const [isDictating, setIsDictating] = useState(false)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
 
   useEffect(() => {
     fetchMembers()
@@ -287,6 +299,112 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
     }
   }
 
+  const handleScheduleGoogle = async () => {
+    if (!task) return
+    setSchedulingGoogle(true)
+    try {
+      const res = await fetch(`/api/workspaces/${slug}/tasks/${task.id}/calendar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          date: googleDate, 
+          startTime: googleStartTime, 
+          endTime: googleEndTime,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
+      })
+      const data = await res.json()
+      if (data.needsAuth) {
+        window.location.href = '/api/auth/google/calendar'
+        return
+      }
+      if (data.error) throw new Error(data.error)
+      toast.success('Scheduled in Google Calendar!')
+      if (data.eventUrl) window.open(data.eventUrl, '_blank')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to schedule in Google Calendar')
+    } finally {
+      setSchedulingGoogle(false)
+    }
+  }
+
+  const startDictation = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        setLoading(true)
+        toast.loading('Analyzing voice instructions...', { id: 'voice-toast' })
+        
+        try {
+          const formData = new FormData()
+          formData.append('file', audioBlob)
+
+          const sttRes = await fetch('/api/groq-stt', { method: 'POST', body: formData })
+          const sttData = await sttRes.json()
+          
+          if (sttData.text) {
+            const parseRes = await fetch('/api/groq-task-parse', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ transcript: sttData.text })
+            })
+            const parseData = await parseRes.json()
+            if (parseData.parsed) {
+              const p = parseData.parsed
+              if (p.title) setTitle(p.title)
+              if (p.description) setDescription(p.description)
+              if (p.priority) setPriority(p.priority)
+              if (p.dueDate) setDueDate(p.dueDate)
+              if (p.tags && p.tags.length > 0) {
+                setTags(prev => Array.from(new Set([...prev, ...p.tags])))
+              }
+              if (p.milestones && p.milestones.length > 0) {
+                setMilestones(p.milestones.map((m: any) => ({
+                  name: m.name || '',
+                  description: m.description || '',
+                  status: 'pending',
+                  estimatedTime: m.estimatedTime || '',
+                  tags: [],
+                  notes: m.notes || '',
+                  attachments: []
+                })))
+              }
+              toast.success('Form automatically populated!', { id: 'voice-toast' })
+            }
+          }
+        } catch (err) {
+          toast.error('Voice auto-fill failed', { id: 'voice-toast' })
+        } finally {
+          setLoading(false)
+        }
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsDictating(true)
+      toast('Listening...', { icon: '🎙️', id: 'listen-toast' })
+    } catch (err) {
+      toast.error('Microphone access denied')
+    }
+  }
+
+  const stopDictation = () => {
+    if (mediaRecorderRef.current && isDictating) {
+      mediaRecorderRef.current.stop()
+      setIsDictating(false)
+      toast.dismiss('listen-toast')
+    }
+  }
+
   const filteredMembers = members.filter(m => 
     !selectedMemberIds.includes(m.id) && 
     (searchMember === '' || 
@@ -326,9 +444,20 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-all hover:scale-110 active:scale-95 shadow-sm border border-transparent hover:border-stone-200 dark:hover:border-gray-700">
-            <X className="w-6 h-6 text-stone-400" />
-          </button>
+          <div className="flex items-center gap-3">
+            {isDictating ? (
+              <button onClick={stopDictation} className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 animate-pulse hover:bg-red-200 transition-colors">
+                <Square className="w-4 h-4 fill-current" /> STOP LISTENING
+              </button>
+            ) : (
+              <button onClick={startDictation} className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-100 transition-colors shadow-sm">
+                <Mic className="w-4 h-4" /> AI VOICE FILL
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-all hover:scale-110 active:scale-95 shadow-sm border border-transparent hover:border-stone-200 dark:hover:border-gray-700">
+              <X className="w-6 h-6 text-stone-400" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -427,6 +556,53 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                   </div>
                 </div>
               </div>
+
+              {task && (
+                <div className="space-y-4 pt-6 mt-6 border-t border-stone-100 dark:border-gray-800">
+                  <div className="space-y-2">
+                    <h4 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Calendar className="w-3 h-3 text-blue-500" /> Google Calendar Integration
+                    </h4>
+                    <p className="text-xs text-stone-500 font-medium">Schedule this task as an event in your Google Calendar.</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-end gap-4">
+                    <div className="flex-1 space-y-2">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase">Date</label>
+                      <input 
+                        type="date"
+                        value={googleDate}
+                        onChange={(e) => setGoogleDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:border-blue-500 outline-none text-sm font-bold"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase">Start Time</label>
+                      <input 
+                        type="time"
+                        value={googleStartTime}
+                        onChange={(e) => setGoogleStartTime(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:border-blue-500 outline-none text-sm font-bold"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase">End Time</label>
+                      <input 
+                        type="time"
+                        value={googleEndTime}
+                        onChange={(e) => setGoogleEndTime(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:border-blue-500 outline-none text-sm font-bold"
+                      />
+                    </div>
+                    <button
+                      onClick={handleScheduleGoogle}
+                      disabled={schedulingGoogle || !googleDate || !googleStartTime || !googleEndTime}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2 shrink-0"
+                    >
+                      {schedulingGoogle ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Schedule'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

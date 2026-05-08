@@ -4,18 +4,13 @@ import React, { useState, useEffect } from 'react'
 import { 
   CheckSquare, 
   Clock, 
-  AlertCircle, 
-  Plus, 
-  MoreHorizontal, 
-  User as UserIcon,
-  MessageSquare,
-  Sparkles,
   Zap,
-  Filter,
-  Briefcase
+  Briefcase,
+  Sparkles
 } from 'lucide-react'
 import gsap from 'gsap'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
 type TaskStatus = 'todo' | 'in_progress' | 'done'
 
@@ -26,12 +21,6 @@ interface Assignee {
   imageUrl?: string
 }
 
-interface Workspace {
-  name: string
-  slug: string
-  imageUrl?: string
-}
-
 interface Task {
   id: number
   title: string
@@ -39,11 +28,12 @@ interface Task {
   status: TaskStatus
   priority: 'low' | 'medium' | 'high'
   assignees: Assignee[]
-  workspace: Workspace
   dueDate?: string
 }
 
-export default function TasksPage() {
+export default function WorkspaceTasksListPage() {
+  const params = useParams()
+  const slug = params.slug as string
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'assigned_to_me'>('all')
@@ -52,7 +42,7 @@ export default function TasksPage() {
   const fetchTasks = async (currentFilter: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/tasks?filter=${currentFilter}`)
+      const res = await fetch(`/api/workspaces/${slug}/tasks?filter=${currentFilter}`)
       const data = await res.json()
       if (data.tasks) {
         setTasks(data.tasks)
@@ -103,7 +93,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     fetchTasks(filter)
-  }, [filter])
+  }, [filter, slug])
 
   useEffect(() => {
     if (!loading && tasks.length > 0) {
@@ -128,10 +118,10 @@ export default function TasksPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-stone-900 dark:text-white tracking-tight uppercase">
-            My <span className="text-emerald-500">Tasks</span>
+            Workspace <span className="text-emerald-500">Tasks</span>
           </h1>
           <p className="text-stone-600 dark:text-gray-400 mt-2 font-medium">
-            View all your tasks across different workspaces.
+            View all tasks in this workspace.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -140,7 +130,7 @@ export default function TasksPage() {
             onChange={(e) => setFilter(e.target.value as any)}
             className="p-3 rounded-2xl border border-stone-200 dark:border-gray-800 text-stone-600 dark:text-gray-400 bg-white dark:bg-gray-900 font-bold focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
           >
-            <option value="all">All Tasks in My Workspaces</option>
+            <option value="all">All Tasks</option>
             <option value="assigned_to_me">Assigned Directly to Me</option>
           </select>
           <button 
@@ -151,6 +141,12 @@ export default function TasksPage() {
             {isPrioritizing ? <Sparkles className="w-5 h-5 animate-pulse" /> : <Sparkles className="w-5 h-5 text-emerald-400" />}
             {isPrioritizing ? 'Analyzing...' : 'AI Prioritize'}
           </button>
+          <Link
+            href={`/workspaces/${slug}/tasks`}
+            className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold transition-transform hover:scale-105 active:scale-95 shadow-xl shadow-emerald-500/20"
+          >
+            Open Kanban Board
+          </Link>
         </div>
       </div>
 
@@ -183,7 +179,7 @@ export default function TasksPage() {
                   })
                   .map((task) => (
                     <Link
-                      href={`/workspaces/${task.workspace.slug}/tasks`}
+                      href={`/workspaces/${slug}/tasks`}
                       key={task.id}
                       className="task-card block group bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all active:scale-95 border-b-4 border-b-transparent hover:border-b-emerald-500"
                     >
@@ -195,11 +191,6 @@ export default function TasksPage() {
                         }`}>
                           {task.priority || 'no priority'}
                         </span>
-                        
-                        <div className="flex items-center gap-1.5 px-2 py-1 bg-stone-100 dark:bg-gray-800 rounded-lg text-[10px] font-bold text-stone-600 dark:text-gray-400 uppercase tracking-wider">
-                          <Briefcase className="w-3 h-3" />
-                          <span className="truncate max-w-[80px]">{task.workspace.name}</span>
-                        </div>
                       </div>
                       
                       <h3 className="font-bold text-stone-900 dark:text-white mb-2 leading-tight group-hover:text-emerald-500 transition-colors">
