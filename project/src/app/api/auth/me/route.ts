@@ -38,8 +38,8 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const { name, imageUrl } = body
 
-  const data: { name?: string; imageUrl?: string | null } = {}
-  if (typeof name === 'string') data.name = name.trim() || null
+  const data: { name?: string | null; imageUrl?: string | null } = {}
+  if (typeof name === 'string') data.name = name.trim() || undefined
   if (imageUrl !== undefined) data.imageUrl = imageUrl === null || imageUrl === '' ? null : String(imageUrl)
 
   if (Object.keys(data).length === 0) {

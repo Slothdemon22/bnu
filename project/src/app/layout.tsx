@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToasterProvider } from "@/components/ui/ToasterProvider";
+import "@/lib/GSAPAnimations";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -11,6 +12,16 @@ const manrope = Manrope({
 const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
   variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+});
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -27,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${manrope.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${manrope.variable} ${ibmPlexMono.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToasterProvider />
         {children}
