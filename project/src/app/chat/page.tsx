@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { HomeNav } from '@/components/home/HomeNav'
-import { HomeFooter } from '@/components/home/HomeFooter'
+import Navbar from '@/components/custom/Navbar'
+import Footer from '@/components/custom/Footer'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/ToasterProvider'
 import { MessageThread, type Message, type Author } from '@/components/chat/MessageThread'
@@ -49,6 +49,18 @@ function removeOptimistic(list: Message[], tempId: string | number): Message[] {
     })
 }
 
+function findMessageById(list: Message[], id: string | number): Message | null {
+  for (const m of list) {
+    if (m.id === id) return m
+    if (m.replies?.length) {
+      const found = findMessageById(m.replies, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+
 export default function CommunityChatPage() {
   const { user, loading: authLoading } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
@@ -70,6 +82,41 @@ export default function CommunityChatPage() {
       toast.error('Failed to load messages')
     } finally {
       setLoading(false)
+    }
+  }, [])
+
+  // Real-time subscription
+  useEffect(() => {
+    const { createPusherClient } = require('@/lib/pusher/client')
+    const pusher = createPusherClient()
+    
+    if (pusher) {
+      const channel = pusher.subscribe('community-chat')
+      
+      channel.bind('new-message', (data: { message: Message }) => {
+        setMessages(prev => {
+          if (findMessageById(prev, data.message.id)) return prev
+
+          if (data.message.parentId === null) return [...prev, data.message]
+
+          const injectReply = (list: Message[]): Message[] => {
+            return list.map(m => {
+              if (m.id === data.message.parentId) {
+                return { ...m, replies: [...(m.replies || []), data.message] }
+              }
+              if (m.replies?.length) {
+                return { ...m, replies: injectReply(m.replies) }
+              }
+              return m
+            })
+          }
+          return injectReply(prev)
+        })
+      })
+
+      return () => {
+        pusher.unsubscribe('community-chat')
+      }
     }
   }, [])
 
@@ -140,7 +187,23 @@ export default function CommunityChatPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to send')
-      await fetchMessages()
+      
+      // Replace optimistic message with the real one
+      setMessages(prev => {
+        const withoutOpt = removeOptimistic(prev, tempId)
+        if (findMessageById(withoutOpt, data.message.id)) return withoutOpt
+
+        if (parentId === null) return [...withoutOpt, data.message]
+        
+        const inject = (list: Message[]): Message[] => {
+          return list.map(m => {
+            if (m.id === parentId) return { ...m, replies: [...(m.replies || []), data.message] }
+            if (m.replies?.length) return { ...m, replies: inject(m.replies) }
+            return m
+          })
+        }
+        return inject(withoutOpt)
+      })
     } catch (err: any) {
       setMessages((prev) => removeOptimistic(prev, tempId))
       toast.error(err.message || 'Failed to send')
@@ -165,22 +228,24 @@ export default function CommunityChatPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-stone-50 dark:bg-gray-900 flex flex-col">
-        <HomeNav />
-        <main className="flex-1 flex items-center justify-center">
-          <span className="text-stone-500">Loading...</span>
-        </main>
-        <HomeFooter />
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <MessageSquare className="w-6 h-6 text-emerald-500 animate-pulse" />
+          </div>
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-black text-stone-900 dark:text-white uppercase tracking-tighter">Connecting to Hub</h2>
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-[0.3em] animate-pulse">Initializing Streams...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-50 to-emerald-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-950/20 flex flex-col">
-      <HomeNav />
-
-      <main className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4 sm:px-6 py-6">
-        <div className="flex items-center justify-between mb-6 gap-4">
+    <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4 sm:px-6 py-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-stone-900 dark:text-white tracking-tight">
@@ -283,34 +348,25 @@ export default function CommunityChatPage() {
           {user && (
             <div className="p-4 border-t border-stone-200 dark:border-gray-700 bg-gradient-to-r from-white to-stone-50/50 dark:from-gray-800 dark:to-gray-900/50">
               {replyingTo && (
-                <div className="flex items-center gap-3 mb-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/20 border border-emerald-200 dark:border-emerald-800 shadow-sm">
-                  <UserAvatar
-                    userId={replyingTo.author.id}
-                    name={replyingTo.author.name}
-                    email={replyingTo.author.email}
-                    imageUrl={replyingTo.author.imageUrl}
-                    role={replyingTo.author.role}
-                    size="sm"
-                    showTooltip={false}
-                  />
+                <div className="flex items-center gap-4 mb-4 px-4 py-3 rounded-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-emerald-500/20 shadow-lg animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="w-1 h-10 bg-emerald-500 rounded-full shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">
                         Replying to
                       </span>
-                      <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-300 truncate">
+                      <span className="text-sm font-black text-stone-900 dark:text-white truncate">
                         {displayName(replyingTo.author)}
                       </span>
                     </div>
-                    <p className="text-xs text-stone-600 dark:text-gray-400 truncate mt-0.5">
-                      {replyingTo.content.slice(0, 60)}{replyingTo.content.length > 60 ? '…' : ''}
+                    <p className="text-xs text-stone-500 dark:text-gray-400 truncate mt-1 italic">
+                      "{replyingTo.content}"
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setReplyingTo(null)}
-                    className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-emerald-600 hover:text-emerald-800 hover:bg-emerald-200 dark:hover:text-emerald-300 dark:hover:bg-emerald-900/40 transition-all"
-                    aria-label="Cancel reply"
+                    className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-gray-800 text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -376,9 +432,7 @@ export default function CommunityChatPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
+    )
+  }
 
-      <HomeFooter />
-    </div>
-  )
-}

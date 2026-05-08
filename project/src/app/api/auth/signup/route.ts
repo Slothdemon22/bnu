@@ -93,6 +93,21 @@ export async function POST(request: NextRequest) {
       metadata: { email: user.email, role: user.role },
     })
 
+    // Send welcome notification
+    try {
+      const { notifyUser } = await import('@/lib/activity')
+      await notifyUser({
+        userId: user.id,
+        title: 'Welcome to FlowSync!',
+        message: `We're excited to have you here, ${user.name || 'User'}. Start by creating your first workspace.`,
+        type: 'user_registered',
+        entityType: 'user',
+        entityId: user.id
+      })
+    } catch (notiErr) {
+      console.error('[NOTI_ERR] Failed to send welcome notification:', notiErr)
+    }
+
     return NextResponse.json(
       {
         message: 'User created successfully',

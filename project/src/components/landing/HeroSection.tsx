@@ -67,9 +67,9 @@ function HomePage() {
         className="hero space-y-4 pt-[116px] pb-[48px] md:pt-[128px] md:pb-[128px] md:text-center lg:pt-[140px] lg:pb-[96px]"
       >
         <SectionHeading
-          badge="AI Strategy & Development"
-          heading="AI Transformation Partner for Growing Businesses"
-          description="We build, train, & deploy custom-LLMs (GPT4, Mistral, Llama3) and other generative AI technologies into products & services at scale — thousands of users & millions of interactions."
+          badge="Productivity Reimagined"
+          heading="AI-Powered Task Management for Efficient Teams"
+          description="Sync your team's workflow with intelligent task prioritization, real-time collaboration, and automated meeting insights. Built for the modern enterprise."
           icon={Sparkles}
           size="lg"
           align="center"
@@ -84,19 +84,24 @@ function HomePage() {
           className="mt-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-center"
         >
           <Button
-            aria-describedby="founder-cta-description"
+            aria-describedby="get-started-cta"
             type="button"
-            className="cursor-pointer"
+            className="cursor-pointer px-8 py-6 text-lg rounded-xl"
+            onClick={() => window.location.href = '/signup'}
           >
-            Talk to our founder
+            Get Started Free
           </Button>
           <Button
-            aria-describedby="case-studies-cta-description"
+            aria-describedby="features-cta"
             type="button"
-            className="cursor-pointer"
+            className="cursor-pointer px-8 py-6 text-lg rounded-xl"
             variant={"outline"}
+            onClick={() => {
+              const el = document.getElementById('case-studies-section');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
-            View Case Studios
+            Explore Features
           </Button>
         </div>
 

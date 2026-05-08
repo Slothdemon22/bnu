@@ -14,7 +14,9 @@ if (typeof window !== 'undefined') {
   console.error = (...args: any[]) => {
     if (
       typeof args[0] === 'string' &&
-      args[0].includes('Accessing element.ref was removed in React 19')
+      (args[0].includes('Accessing element.ref was removed in React 19') ||
+       args[0].includes('Multiple versions of @tldraw/state detected') ||
+       args[0].includes('received error from sdk'))
     ) {
       return // Suppress this specific warning
     }

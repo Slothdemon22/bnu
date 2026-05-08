@@ -19,15 +19,126 @@ model User {
   password  String
   role      String     @default("user") // "user" | "admin"
   imageUrl  String?    // profile avatar URL (Supabase storage)
+  
+  // Onboarding fields
+  onboardingCompleted Boolean @default(false)
+  profession          String?
+  workspaceName       String?
+  teamSize           String?
+  primaryGoal        String?
+  
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
+  workspaces WorkspaceMember[]
+  workspaceInvitesSent WorkspaceInvite[] @relation("InvitedBy")
   properties Property[]
   activities ActivityLog[]
   approvedMeetings MeetingRequest[]
   chatMessages ChatMessage[]
 
   notifications Notification[]
+  tasksCreated Task[] @relation("TaskCreator")
+  tasksAssigned Task[] @relation("TaskAssignees")
+}
+
+model Workspace {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  useCase     String?  // "Project Management", "Team Collaboration", etc.
+  teamSize    String?  // "1-5", "6-20", etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     WorkspaceMember[]
+  invites     WorkspaceInvite[]
+  chatMessages ChatMessage[]
+  tasks       Task[]
+}
+
+// Task Management
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  status      String    @default("todo") // "todo" | "in_progress" | "review" | "done"
+  priority    String    @default("medium") // "low" | "medium" | "high" | "urgent"
+  dueDate     DateTime?
+  tags        String[]
+  attachments String[] // Array of Supabase URLs
+  
+  // Meeting Integration
+  roomId      String?   // 100ms room ID
+  roomCode    String?   // Room code for joining
+  roomUrl     String?   // Full room URL
+  meetingTime DateTime? // Scheduled meeting time
+  
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  
+  createdById Int
+  createdBy   User      @relation("TaskCreator", fields: [createdById], references: [id])
+  
+  assignees   User[]    @relation("TaskAssignees")
+  
+  milestones  Milestone[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workspaceId])
+}
+
+model Milestone {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  status        String   @default("pending") // "pending" | "completed"
+  estimatedTime String?
+  tags          String[]
+  notes         String?
+  attachments   String[] // Array of Supabase URLs
+  
+  taskId        Int
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model WorkspaceMember {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  role        String    @default("member") // "owner" | "admin" | "member"
+  department  String?
+  jobTitle    String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, workspaceId])
+}
+
+model WorkspaceInvite {
+  id          Int       @id @default(autoincrement())
+  email       String
+  role        String    @default("member")
+  department  String?
+  jobTitle    String?
+  token       String    @unique
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  invitedById Int
+  invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id])
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
 }
 
 model Property {
@@ -118,10 +229,13 @@ model ChatMessage {
   parentId   Int?         // null = top-level message; set = reply to that message
   parent     ChatMessage? @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
   replies    ChatMessage[] @relation("Replies")
+  workspaceId Int?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
   @@index([parentId])
   @@index([authorId])
+  @@index([workspaceId])
   @@index([createdAt])
 }

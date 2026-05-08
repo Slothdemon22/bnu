@@ -28,8 +28,7 @@ export function SignupForm() {
         setLoading(false)
         return
       }
-      router.push('/')
-      router.refresh()
+      window.location.href = '/onboarding'
     } catch {
       setError('An error occurred. Please try again.')
       setLoading(false)
@@ -37,26 +36,26 @@ export function SignupForm() {
   }
 
   return (
-    <div className="surface-card p-7 sm:p-8">
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--muted)]">
+    <div className="bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-stone-200/50 dark:shadow-black/50">
+      <div className="mb-8">
+        <p className="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
           New Account
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Create account</h1>
-        <p className="mt-2 text-sm text-[color:var(--muted)]">
-          Start managing properties and communication in one workspace.
+        <h1 className="mt-2 text-3xl font-black tracking-tighter text-stone-900 dark:text-white">Create account</h1>
+        <p className="mt-2 text-sm text-stone-500 dark:text-gray-400 font-medium">
+          Start managing projects and communication in one workspace.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/35 dark:text-red-300">
+          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-500/30 px-4 py-3 text-sm font-medium text-red-600 dark:text-red-400">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
+          <label htmlFor="name" className="block text-sm font-bold text-stone-900 dark:text-white mb-2">
             Full name
           </label>
           <input
@@ -64,13 +63,13 @@ export function SignupForm() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="input-clean w-full px-3 py-2.5 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-gray-700 bg-stone-50 dark:bg-gray-800 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
             placeholder="John Doe"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+          <label htmlFor="email" className="block text-sm font-bold text-stone-900 dark:text-white mb-2">
             Email
           </label>
           <input
@@ -79,13 +78,13 @@ export function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="input-clean w-full px-3 py-2.5 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-gray-700 bg-stone-50 dark:bg-gray-800 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium">
+          <label htmlFor="password" className="block text-sm font-bold text-stone-900 dark:text-white mb-2">
             Password
           </label>
           <input
@@ -95,36 +94,36 @@ export function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="input-clean w-full px-3 py-2.5 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-gray-700 bg-stone-50 dark:bg-gray-800 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
             placeholder="At least 6 characters"
           />
-          <p className="mt-1 text-xs text-[color:var(--muted)]">Minimum length: 6 characters</p>
         </div>
 
-        <label className="flex items-start gap-2 text-xs text-[color:var(--muted)]">
-          <input type="checkbox" required className="mt-0.5" />
-          <span>
-            I agree to the <Link href="#" className="font-medium text-[color:var(--foreground)]">Terms</Link>{' '}
-            and <Link href="#" className="font-medium text-[color:var(--foreground)]">Privacy Policy</Link>.
+        <label className="flex items-start gap-3 mt-2">
+          <input type="checkbox" required className="mt-1 w-4 h-4 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500" />
+          <span className="text-xs font-medium text-stone-500 dark:text-gray-400 leading-relaxed">
+            I agree to the <Link href="#" className="font-bold text-stone-900 dark:text-white hover:underline">Terms</Link>{' '}
+            and <Link href="#" className="font-bold text-stone-900 dark:text-white hover:underline">Privacy Policy</Link>.
           </span>
         </label>
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full px-4 py-2.5 text-sm disabled:opacity-60"
+          className="w-full px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors disabled:opacity-50 mt-4"
         >
           {loading ? 'Creating account...' : 'Create account'}
         </button>
       </form>
 
-      <div className="divider my-6" />
-      <p className="text-sm text-[color:var(--muted)]">
-        Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-[color:var(--foreground)]">
-          Sign in
-        </Link>
-      </p>
+      <div className="mt-8 text-center">
+        <p className="text-sm text-stone-500 dark:text-gray-400 font-medium">
+          Already have an account?{' '}
+          <Link href="/login" className="font-bold text-stone-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

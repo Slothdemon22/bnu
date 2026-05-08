@@ -10,14 +10,16 @@ function Footer() {
   const imageRef = useRef<HTMLImageElement>(null);
 
   const resourceLinks = [
-    { name: "Blogs", href: "blog" },
-    { name: "About", href: "about" },
+    { name: "Features", href: "/#features" },
+    { name: "Meetings", href: "/meeting" },
+    { name: "Tasks", href: "/tasks" },
+    { name: "Chat", href: "/chat" },
   ];
 
   const socialLinks = [
-    { name: "X", href: "https://x.com/Pinak72813632" },
-    { name: "LinkedIn", href: "https://www.linkedin.com/in/pinakfaldu/" },
-    { name: "Github", href: "https://github.com/pinak3748" },
+    { name: "X (Twitter)", href: "https://x.com/" },
+    { name: "LinkedIn", href: "https://www.linkedin.com/" },
+    { name: "Github", href: "https://github.com/" },
   ];
 
   return (
@@ -33,21 +35,21 @@ function Footer() {
           src="https://pbs.twimg.com/media/GxtkGthWsAAPR6-?format=jpg&name=4096x4096"
           alt="Books landscape background"
         />
-        <h5
+        <div
           ref={marqueeRef}
           className="pointer-events-none absolute -bottom-10 z-10 w-full select-none sm:-bottom-16 md:-bottom-24 lg:-bottom-32"
         >
-          <Marquee className="[--duration:5s]">
-            {["I", "O", "N", "I", "O"].map((char, idx) => (
+          <Marquee className="[--duration:20s]" repeat={1}>
+            {["F", "L", "O", "W", "S", "Y", "N", "C"].map((char, idx) => (
               <span
-                key={`ionio-outline-${idx}`}
-                className={`text-primary-foreground/80 footer-slang font-extrabold uppercase`}
+                key={`flowsync-outline-${idx}`}
+                className={`text-primary-foreground/80 footer-slang font-extrabold uppercase px-4`}
               >
                 {char}
               </span>
             ))}
           </Marquee>
-        </h5>
+        </div>
       </div>
 
       <footer
@@ -56,51 +58,35 @@ function Footer() {
         itemScope
         itemType="https://schema.org/Organization"
       >
-        <div className="rounded-3xl bg-black/20 px-4 py-8 backdrop-blur-sm sm:px-6 md:py-14">
+        <div className="mx-auto max-w-6xl rounded-3xl bg-black/20 px-4 py-8 backdrop-blur-sm sm:px-6 md:py-14">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 lg:gap-12">
             <div className="space-y-8 md:col-span-5 lg:col-span-4">
               <div className="space-y-6">
-                <div
-                  className="space-y-2 text-white/80"
-                  itemScope
-                  itemType="https://schema.org/Organization"
-                >
-                  <p className="text-2xl font-bold" itemProp="name">
-                    Ionio LLC
-                  </p>
-                  <p className="text-sm">Copyrights © All Rights Reserved by Ionio.io</p>
-                  <p className="text-sm">
-                    <span className="sr-only">Phone:</span>
-                    <a href="tel:+19103150746" itemProp="telephone" className="hover:underline">
-                      +1-910-315-0746
-                    </a>
-                  </p>
-                  <p
-                    className="text-sm"
-                    itemProp="address"
-                    itemScope
-                    itemType="https://schema.org/PostalAddress"
-                  >
-                    <span itemProp="streetAddress">2055 Limestone Rd STE 200C IN Wilmington</span>
-                  </p>
-                  <p className="text-sm">
-                    <span itemProp="addressLocality">Wilmington</span>,{" "}
-                    <span itemProp="addressRegion">DE</span>{" "}
-                    <span itemProp="postalCode">19808</span>
-                  </p>
-                </div>
+                  <div
+                   className="space-y-2 text-white/80"
+                   itemScope
+                   itemType="https://schema.org/Organization"
+                 >
+                   <p className="text-2xl font-bold" itemProp="name">
+                     FlowSync
+                   </p>
+                   <p className="text-sm">Copyrights © All Rights Reserved by FlowSync</p>
+                   <p className="text-sm text-white/60">
+                     AI-Powered Task Management for Efficient Teams
+                   </p>
+                 </div>
 
                 <div className="flex">
-                  <a href="#work-with-us">
-                    <Button
-                      variant="outline"
-                      className="border-primary-foreground/5 bg-white/5 cursor-pointer backdrop-blur-2xl text-white hover:bg-white/10 hover:text-white hover:backdrop-blur-2xl"
-                    >
-                      Work with us
-                      <ArrowUpRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </a>
-                </div>
+                   <a href="/signup">
+                     <Button
+                       variant="outline"
+                       className="border-primary-foreground/5 bg-white/5 cursor-pointer backdrop-blur-2xl text-white hover:bg-white/10 hover:text-white hover:backdrop-blur-2xl"
+                     >
+                       Get Started
+                       <ArrowUpRight className="ml-2 h-4 w-4" />
+                     </Button>
+                   </a>
+                 </div>
               </div>
             </div>
 

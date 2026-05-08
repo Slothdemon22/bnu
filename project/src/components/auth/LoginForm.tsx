@@ -31,8 +31,11 @@ export function LoginForm() {
         setLoading(false)
         return
       }
-      router.push('/')
-      router.refresh()
+      if (data.user && data.user.onboardingCompleted === false) {
+        window.location.href = '/onboarding'
+      } else {
+        window.location.href = '/'
+      }
     } catch {
       setError('An error occurred. Please try again.')
       setLoading(false)
@@ -66,8 +69,11 @@ export function LoginForm() {
       // App auth is cookie-based; clear Firebase client session.
       await signOut(auth).catch(() => {})
 
-      router.push('/')
-      router.refresh()
+      if (data.user && (data.user.isNewUser || data.user.onboardingCompleted === false)) {
+        window.location.href = '/onboarding'
+      } else {
+        window.location.href = '/'
+      }
     } catch (e: any) {
       if (e?.code === 'auth/popup-closed-by-user') {
         setError('Google sign-in was cancelled.')
@@ -79,20 +85,20 @@ export function LoginForm() {
   }
 
   return (
-    <div className="surface-card p-7 sm:p-8">
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--muted)]">
+    <div className="bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-stone-200/50 dark:shadow-black/50">
+      <div className="mb-8">
+        <p className="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
           Account Access
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-2 text-sm text-[color:var(--muted)]">
-          Access your listings, requests, and profile settings.
+        <h1 className="mt-2 text-3xl font-black tracking-tighter text-stone-900 dark:text-white">Sign in</h1>
+        <p className="mt-2 text-sm text-stone-500 dark:text-gray-400 font-medium">
+          Access your workspace, tasks, and team settings.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/35 dark:text-red-300">
+          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-500/30 px-4 py-3 text-sm font-medium text-red-600 dark:text-red-400">
             {error}
           </div>
         )}
@@ -101,27 +107,28 @@ export function LoginForm() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading || googleLoading}
-          className="btn-secondary w-full px-4 py-2.5 text-sm disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border-2 border-stone-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-stone-900 dark:text-white font-bold hover:bg-stone-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
           {googleLoading ? (
             'Connecting...'
           ) : (
-            <span className="inline-flex items-center gap-2">
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.9 2.2 2.8 6.3 2.8 11.4S6.9 20.6 12 20.6c6.9 0 9.1-4.8 9.1-7.3 0-.5 0-.8-.1-1.1H12z"
-                />
+            <>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+                <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.9 2.2 2.8 6.3 2.8 11.4S6.9 20.6 12 20.6c6.9 0 9.1-4.8 9.1-7.3 0-.5 0-.8-.1-1.1H12z" />
               </svg>
               Continue with Google
-            </span>
+            </>
           )}
         </button>
 
-        <div className="divider" />
+        <div className="flex items-center gap-4 my-6">
+          <div className="flex-1 h-px bg-stone-200 dark:bg-gray-800"></div>
+          <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Or</span>
+          <div className="flex-1 h-px bg-stone-200 dark:bg-gray-800"></div>
+        </div>
 
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+          <label htmlFor="email" className="block text-sm font-bold text-stone-900 dark:text-white mb-2">
             Email
           </label>
           <input
@@ -131,21 +138,18 @@ export function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading || googleLoading}
-            className="input-clean w-full px-3 py-2.5 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-gray-700 bg-stone-50 dark:bg-gray-800 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="password" className="text-sm font-medium">
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="password" className="text-sm font-bold text-stone-900 dark:text-white">
               Password
             </label>
-            <Link
-              href="#"
-              className="text-xs font-medium text-[color:var(--muted)] hover:text-[color:var(--foreground)]"
-            >
-              Forgot password
+            <Link href="#" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+              Forgot password?
             </Link>
           </div>
           <input
@@ -155,7 +159,7 @@ export function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading || googleLoading}
-            className="input-clean w-full px-3 py-2.5 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-gray-700 bg-stone-50 dark:bg-gray-800 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
             placeholder="••••••••"
           />
         </div>
@@ -163,19 +167,20 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading || googleLoading}
-          className="btn-primary w-full px-4 py-2.5 text-sm disabled:opacity-60"
+          className="w-full px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors disabled:opacity-50 mt-2"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
 
-      <div className="divider my-6" />
-      <p className="text-sm text-[color:var(--muted)]">
-        New here?{' '}
-        <Link href="/signup" className="font-semibold text-[color:var(--foreground)]">
-          Create an account
-        </Link>
-      </p>
+      <div className="mt-8 text-center">
+        <p className="text-sm text-stone-500 dark:text-gray-400 font-medium">
+          New here?{' '}
+          <Link href="/signup" className="font-bold text-stone-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+            Create an account
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

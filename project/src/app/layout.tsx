@@ -26,9 +26,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EstatePro - Find Your Dream Home | Premium Real Estate",
-  description: "Discover premium properties and expert real estate services. Buy, sell, or rent with EstatePro - your trusted partner in real estate.",
+  title: "FlowSync - AI-Powered Task Manager for Teams",
+  description: "FlowSync combines AI task management, video meetings, real-time chat, and analytics into one seamless platform built for high-performance teams.",
 };
+
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { UserOnboardingGuard } from "@/components/auth/UserOnboardingGuard";
+import { AppLayout } from "@/components/custom/AppLayout";
 
 export default function RootLayout({
   children,
@@ -40,8 +44,12 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${ibmPlexMono.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToasterProvider />
-        {children}
+        <AuthProvider>
+          <ToasterProvider />
+          <UserOnboardingGuard>
+            <AppLayout>{children}</AppLayout>
+          </UserOnboardingGuard>
+        </AuthProvider>
       </body>
     </html>
   );

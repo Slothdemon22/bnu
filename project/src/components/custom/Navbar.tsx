@@ -7,17 +7,34 @@ import { Github } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 function Navbar() {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
+  const [workspace, setWorkspace] = useState<{ name: string; imageUrl: string | null } | null>(null);
+
+  useEffect(() => {
+    const parts = pathname.split('/');
+    if (parts[1] === 'workspaces' && parts[2]) {
+      fetch(`/api/workspaces/${parts[2]}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.workspace) setWorkspace(data.workspace);
+        })
+        .catch(() => setWorkspace(null));
+    } else {
+      setWorkspace(null);
+    }
+  }, [pathname]);
 
   const navLinks = [
     {
@@ -25,16 +42,18 @@ function Navbar() {
       href: "/",
       description: "Return to homepage",
     },
-    {
-      name: "About",
-      href: "/about",
-      description: "Learn more about our company",
-    },
-    {
-      name: "Blog",
-      href: "/blog",
-      description: "Read our latest AI insights and research",
-    }
+    ...(user ? [
+      {
+        name: "Workspaces",
+        href: "/workspaces",
+        description: "Switch between your team workspaces",
+      },
+      {
+        name: "Profile",
+        href: "/profile",
+        description: "Manage your account and notifications",
+      },
+    ] : []),
   ];
 
   const toggleMenu = () => {
@@ -197,19 +216,30 @@ function Navbar() {
               <Link
                 href="/"
                 className="focus:ring-ring flex items-center gap-2 rounded-md transition-opacity hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                aria-label="Ionio - Return to homepage"
+                aria-label="FlowSync - Return to homepage"
                 aria-describedby="logo-description"
               >
-                <img
-                  src="https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/62528d398a42424d6e390f57_horizontal-logo-transperant.png"
-                  alt="Ionio Logo"
-                  className="h-8 w-auto"
-                  width="120"
-                  height="32"
-                  aria-hidden="true"
-                />
+                {workspace?.imageUrl ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden border border-stone-200 dark:border-gray-800 shadow-sm">
+                      <img src={workspace.imageUrl} alt={workspace.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="font-black text-xl tracking-tighter uppercase text-stone-900 dark:text-white">
+                      {workspace.name}
+                    </span>
+                  </div>
+                ) : (
+                  <img
+                    src="https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/62528d398a42424d6e390f57_horizontal-logo-transperant.png"
+                    alt="FlowSync Logo"
+                    className="h-8 w-auto"
+                    width="120"
+                    height="32"
+                    aria-hidden="true"
+                  />
+                )}
                 <span id="logo-description" className="sr-only">
-                  Ionio - Leading digital solutions provider
+                  {workspace ? `${workspace.name} - ${workspace.imageUrl ? 'Custom Workspace' : 'FlowSync'}` : 'FlowSync - AI-Powered Task Management for Teams'}
                 </span>
               </Link>
             </div>
@@ -257,13 +287,30 @@ function Navbar() {
                 <Github className="h-5 w-5 text-primary" />
               </Link>
 
-              <Button
-                size={"sm"}
-                className="text-sm"
-                aria-label="Contact us to start working together"
-              >
-                Work with us
-              </Button>
+              {user ? (
+                <Button
+                  size={"sm"}
+                  variant="outline"
+                  className="text-sm border-stone-200 dark:border-gray-700"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Link href="/login" className="text-sm font-medium text-stone-600 dark:text-gray-400 hover:text-stone-900 dark:hover:text-white px-2">
+                    Login
+                  </Link>
+                  <Button
+                    size={"sm"}
+                    className="text-sm"
+                    aria-label="Get started with FlowSync"
+                    onClick={() => window.location.href = '/signup'}
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -338,7 +385,7 @@ function Navbar() {
                   <div className="border-t pt-4 space-y-3">
                     {/* GitHub Link */}
                     <Link
-                      href="https://github.com/ionio"
+                      href="https://github.com/pinak3748"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none"
@@ -348,14 +395,33 @@ function Navbar() {
                       <Github className="h-5 w-5 text-primary" />
                       GitHub
                     </Link>
-                    
-                    <Button
-                      className="w-full"
-                      aria-label="Contact us to start working together"
-                      onClick={closeMenu}
-                    >
-                      Work with us
-                    </Button>
+
+                    {user ? (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => { closeMenu(); logout(); }}
+                      >
+                        Logout
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          className="w-full"
+                          onClick={() => { closeMenu(); window.location.href = '/login'; }}
+                        >
+                          Login
+                        </Button>
+                        <Button
+                          className="w-full"
+                          aria-label="Get started with FlowSync"
+                          onClick={() => { closeMenu(); window.location.href = '/signup'; }}
+                        >
+                          Get Started
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

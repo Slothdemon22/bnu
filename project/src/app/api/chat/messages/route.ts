@@ -7,7 +7,10 @@ import { notifyUser } from '@/lib/activity'
 export async function GET() {
   try {
     const topLevel = await prisma.chatMessage.findMany({
-      where: { parentId: null },
+      where: { 
+        parentId: null,
+        workspaceId: null
+      },
       orderBy: { createdAt: 'asc' },
       include: {
         author: {
@@ -111,6 +114,7 @@ export async function POST(req: NextRequest) {
         content: content.trim(),
         authorId: user.id,
         parentId: parentIdNum,
+        workspaceId: null,
       },
       include: {
         author: {
@@ -118,6 +122,12 @@ export async function POST(req: NextRequest) {
         },
       },
     })
+
+    // Trigger Pusher for real-time community chat
+    const { pusherServer } = await import('@/lib/pusher/server')
+    if (pusherServer) {
+      await pusherServer.trigger('community-chat', 'new-message', { message })
+    }
 
     return NextResponse.json({ message }, { status: 201 })
   } catch (error) {

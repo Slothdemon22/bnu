@@ -64,7 +64,7 @@ export default function AdminLayout({
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-stone-200 dark:border-gray-700 flex flex-col shrink-0">
         <div className="p-6 border-b border-stone-200 dark:border-gray-700">
           <Link href="/" className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-600 dark:from-emerald-500 dark:to-emerald-400 bg-clip-text text-transparent">
-            EstatePro
+            FlowSync
           </Link>
           <p className="text-xs text-stone-500 dark:text-gray-400 mt-1">Admin</p>
         </div>

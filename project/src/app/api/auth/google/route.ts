@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
           name: user.name,
           role: user.role,
           imageUrl: user.imageUrl,
+          isNewUser
         },
       },
       { status: 200 }

@@ -96,81 +96,88 @@ const MessageThreadComponent = ({
   return (
     <div
       className={`
-        ${isNested ? 'relative pl-4 sm:pl-6 ml-2 sm:ml-3 border-l-2' : ''} 
-        ${isNested ? getThreadColor(depth - 1) : ''}
-        transition-all duration-200
+        ${isNested ? 'relative pl-8 sm:pl-10 ml-2 sm:ml-4 border-l-2 border-stone-100 dark:border-gray-800' : ''} 
+        transition-all duration-300
       `}
     >
-      {/* Connection dot for nested messages */}
+      {/* Thread connection line */}
+      {isNested && (
+        <div className="absolute -left-[2px] top-0 bottom-0 w-[2px] bg-emerald-500/30" />
+      )}
+
+      {/* Thread indicator dot */}
       {isNested && (
         <div
           className={`
-            absolute -left-[9px] top-6 w-2 h-2 rounded-full 
-            border-2 border-white dark:border-gray-900
-            ${depth === 1 ? 'bg-emerald-500' : depth === 2 ? 'bg-blue-500' : depth === 3 ? 'bg-purple-500' : depth === 4 ? 'bg-pink-500' : 'bg-orange-500'}
+            absolute -left-[7px] top-8 w-3 h-3 rounded-full 
+            border-2 border-white dark:border-gray-900 shadow-sm
+            ${depth === 1 ? 'bg-emerald-500' : depth === 2 ? 'bg-blue-500' : 'bg-purple-500'}
           `}
         />
       )}
 
       <div
         className={`
-          group rounded-2xl p-3 sm:p-4 transition-all duration-200
-          inline-block max-w-3xl
-          ${message._optimistic 
-            ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-2 border-emerald-200 dark:border-emerald-800 animate-pulse' 
-            : 'bg-white dark:bg-gray-800 border border-stone-200 dark:border-gray-700 hover:border-stone-300 dark:hover:border-gray-600'
-          }
-          ${isOwnMessage ? 'ring-1 ring-emerald-500/20' : ''}
-          shadow-sm hover:shadow-md
+          group relative flex flex-col transition-all duration-300 mb-4
+          ${isOwnMessage ? 'items-end' : 'items-start'}
         `}
       >
-        <div className="flex items-start gap-3">
-          <UserAvatar
-            userId={message.author.id}
-            name={message.author.name}
-            email={message.author.email}
-            imageUrl={message.author.imageUrl}
-            role={message.author.role}
-            size="md"
-            showTooltip={true}
-          />
+        <div className={`flex items-end gap-3 max-w-[90%] ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className="shrink-0 mb-1">
+            <UserAvatar
+              userId={message.author.id}
+              name={message.author.name}
+              email={message.author.email}
+              imageUrl={message.author.imageUrl}
+              role={message.author.role}
+              size={isNested ? "xs" : "sm"}
+            />
+          </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="font-semibold text-stone-900 dark:text-white text-[13px] truncate">
+          <div className={`flex flex-col gap-1.5 min-w-0 ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+            {!isOwnMessage && (
+              <div className="flex items-center gap-2 px-1">
+                <span className={`font-black text-stone-900 dark:text-white uppercase tracking-tight ${isNested ? 'text-[10px]' : 'text-[11px]'}`}>
                   {displayName}
                 </span>
                 {message.author.role === 'admin' && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                    ADMIN
+                  <span className="text-[8px] font-black bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-1.5 py-0.5 rounded-md">
+                    STAFF
                   </span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => setShowFullDate(!showFullDate)}
-                className="text-xs text-stone-500 dark:text-gray-400 hover:text-stone-700 dark:hover:text-gray-300 transition-colors shrink-0"
-                title={formatFullDate(message.createdAt)}
-              >
-                {showFullDate ? formatFullDate(message.createdAt) : formatTime(message.createdAt)}
-              </button>
+            )}
+
+            <div
+              className={`
+                relative px-5 py-3.5 rounded-[1.75rem] shadow-sm transition-all duration-300
+                ${message._optimistic 
+                  ? 'bg-emerald-50/50 border border-emerald-200 animate-pulse' 
+                  : isOwnMessage
+                    ? 'bg-emerald-600 text-white rounded-br-none shadow-lg shadow-emerald-500/10'
+                    : isNested
+                      ? 'bg-stone-50 dark:bg-gray-800/50 border border-stone-100 dark:border-gray-800 rounded-bl-none'
+                      : 'bg-white dark:bg-gray-900 border border-stone-100 dark:border-gray-800 rounded-bl-none'
+                }
+                group-hover:shadow-md
+                ${isNested ? 'py-2.5 px-4' : ''}
+              `}
+            >
+              <p className={`leading-relaxed whitespace-pre-wrap break-words ${isOwnMessage ? 'text-white' : 'text-stone-800 dark:text-stone-200'} ${isNested ? 'text-xs' : 'text-[13px]'}`}>
+                {message.content}
+              </p>
             </div>
 
-            <p className="text-stone-700 dark:text-gray-300 text-[13px] leading-relaxed whitespace-pre-wrap break-words">
-              {message.content}
-            </p>
-
-            <div className="flex items-center gap-2 mt-2">
+            <div className={`flex items-center gap-3 px-1 mt-0.5 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                {formatTime(message.createdAt)}
+              </span>
               {canReply && onReply && (
                 <button
                   type="button"
                   onClick={() => onReply(message)}
-                  className="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-stone-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
+                  className="opacity-0 group-hover:opacity-100 text-[10px] font-black text-emerald-500 hover:text-emerald-600 uppercase tracking-widest transition-all"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                  </svg>
                   Reply
                 </button>
               )}
@@ -178,23 +185,9 @@ const MessageThreadComponent = ({
                 <button
                   type="button"
                   onClick={() => setCollapsed(!collapsed)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-stone-600 dark:text-gray-400 hover:text-stone-900 dark:hover:text-gray-200 hover:bg-stone-100 dark:hover:bg-gray-700 transition-all"
+                  className="text-[10px] font-black text-stone-400 hover:text-stone-600 uppercase tracking-widest transition-all flex items-center gap-1"
                 >
-                  {collapsed ? (
-                    <>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                      Show {message.replies!.length} {message.replies!.length === 1 ? 'reply' : 'replies'}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                      Hide {message.replies!.length} {message.replies!.length === 1 ? 'reply' : 'replies'}
-                    </>
-                  )}
+                  {collapsed ? `Show ${message.replies!.length} Replies` : 'Collapse'}
                 </button>
               )}
             </div>
@@ -205,7 +198,7 @@ const MessageThreadComponent = ({
       {/* Nested replies */}
       {hasReplies && !collapsed && (
         <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {message.replies!.map((reply) => (
+          {Array.from(new Map(message.replies!.map(r => [r.id, r])).values()).map((reply) => (
             <MessageThreadComponent
               key={reply.id}
               message={reply}
