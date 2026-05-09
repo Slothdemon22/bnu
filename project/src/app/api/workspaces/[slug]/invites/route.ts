@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 
 const resend = new Resend(process.env.RESEND_SECRET_KEY)
+const PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
 
 export async function POST(
   req: NextRequest,
@@ -90,7 +91,11 @@ export async function POST(
       console.error('[NOTI_ERR] Failed to notify existing user:', err)
     }
 
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite?token=${token}`
+    const baseAppUrl =
+      process.env.NODE_ENV === 'production'
+        ? PRODUCTION_APP_URL
+        : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+    const inviteUrl = `${baseAppUrl}/invite?token=${token}`
 
     console.log('[INVITE_API] Attempting to send email via Resend to:', email)
     const resendResponse = await resend.emails.send({

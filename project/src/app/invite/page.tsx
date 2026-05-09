@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { 
@@ -23,6 +23,7 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const attemptedAutoAcceptRef = useRef(false)
 
   const token = searchParams.get('token')
 
@@ -46,13 +47,7 @@ export default function InvitePage() {
       })
   }, [token])
 
-  const handleAccept = async () => {
-    if (!user) {
-      // Redirect to login but save the current URL to come back
-      router.push(`/login?callbackUrl=${encodeURIComponent(window.location.href)}`)
-      return
-    }
-
+  const handleAccept = useCallback(async () => {
     setAccepting(true)
     try {
       const res = await fetch('/api/workspaces/invites/accept', {
@@ -65,12 +60,22 @@ export default function InvitePage() {
       if (data.error) throw new Error(data.error)
 
       toast.success('Welcome to the workspace!')
-      router.push(`/workspaces/${data.workspaceSlug}`)
+      if (data.onboardingCompleted) {
+        router.push(`/workspaces/${data.workspaceSlug}`)
+      } else {
+        router.push('/onboarding')
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to join workspace')
       setAccepting(false)
     }
-  }
+  }, [router, token])
+
+  useEffect(() => {
+    if (!token || loading || authLoading || !invite || error || accepting || attemptedAutoAcceptRef.current) return
+    attemptedAutoAcceptRef.current = true
+    void handleAccept()
+  }, [token, loading, authLoading, invite, error, accepting, handleAccept])
 
   if (loading || authLoading) {
     return (
@@ -159,7 +164,7 @@ export default function InvitePage() {
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <>
-                {user ? 'Accept & Join Workspace' : 'Sign in to Join'}
+                {'Accept & Join Workspace'}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}

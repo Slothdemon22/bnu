@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, hashPassword, setAuthCookie } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const { token } = await req.json()
   if (!token) return NextResponse.json({ error: 'Token is required' }, { status: 400 })
 
@@ -19,11 +16,71 @@ export async function POST(req: NextRequest) {
     if (invite.acceptedAt) return NextResponse.json({ error: 'Invitation already used' }, { status: 400 })
     if (new Date() > invite.expiresAt) return NextResponse.json({ error: 'Invitation expired' }, { status: 400 })
 
+    const sessionUser = await getCurrentUser()
+    if (sessionUser && sessionUser.email.toLowerCase() !== invite.email.toLowerCase()) {
+      return NextResponse.json(
+        { error: `This invite is for ${invite.email}. Please log out and open the invite link again.` },
+        { status: 409 }
+      )
+    }
+
+    let actingUser = sessionUser
+    if (!actingUser) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: invite.email }
+      })
+
+      if (existingUser) {
+        actingUser = {
+          id: existingUser.id,
+          email: existingUser.email,
+          name: existingUser.name,
+          role: existingUser.role ?? 'user',
+        }
+      } else {
+        const tempPassword = Math.random().toString(36).slice(-12) + Date.now().toString(36)
+        const hashedPassword = await hashPassword(tempPassword)
+
+        const createdUser = await prisma.user.create({
+          data: {
+            email: invite.email,
+            password: hashedPassword,
+            name: invite.email.split('@')[0] || null,
+            role: 'user',
+          }
+        })
+
+        actingUser = {
+          id: createdUser.id,
+          email: createdUser.email,
+          name: createdUser.name,
+          role: createdUser.role ?? 'user',
+        }
+      }
+
+      await setAuthCookie({
+        id: actingUser.id,
+        email: actingUser.email,
+        name: actingUser.name,
+        role: actingUser.role ?? 'user',
+      })
+    }
+
+    if (!actingUser) {
+      return NextResponse.json({ error: 'Failed to resolve invited user' }, { status: 500 })
+    }
+
+    const resolvedUser = await prisma.user.findUnique({
+      where: { id: actingUser.id },
+      select: { onboardingCompleted: true }
+    })
+    const onboardingCompleted = !!resolvedUser?.onboardingCompleted
+
     // Check if already a member
     const existingMember = await prisma.workspaceMember.findUnique({
       where: {
         userId_workspaceId: {
-          userId: user.id,
+          userId: actingUser.id,
           workspaceId: invite.workspaceId
         }
       }
@@ -38,7 +95,8 @@ export async function POST(req: NextRequest) {
       
       return NextResponse.json({ 
         message: 'You are already a member of this workspace',
-        workspaceSlug: invite.workspace.slug 
+        workspaceSlug: invite.workspace.slug,
+        onboardingCompleted,
       })
     }
 
@@ -46,7 +104,7 @@ export async function POST(req: NextRequest) {
     await prisma.$transaction([
       prisma.workspaceMember.create({
         data: {
-          userId: user.id,
+          userId: actingUser.id,
           workspaceId: invite.workspaceId,
           role: invite.role,
           department: invite.department,
@@ -65,7 +123,7 @@ export async function POST(req: NextRequest) {
       await notifyUser({
         userId: invite.invitedById,
         title: 'Invitation Accepted',
-        message: `${user.name || user.email} has joined ${invite.workspace.name}.`,
+        message: `${actingUser.name || actingUser.email} has joined ${invite.workspace.name}.`,
         type: 'invite_accepted',
         entityType: 'workspace',
         entityId: invite.workspaceId
@@ -76,7 +134,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       message: 'Joined workspace successfully',
-      workspaceSlug: invite.workspace.slug 
+      workspaceSlug: invite.workspace.slug,
+      onboardingCompleted,
     })
   } catch (error: any) {
     if (error.code === 'P2002') {
