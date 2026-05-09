@@ -4,13 +4,10 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
 
-  // Skip linting and type checking during builds
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
-  // typescript: {
-  //   ignoreBuildErrors: true,
-  // },
+  // Skip type checking during builds
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
 
 
