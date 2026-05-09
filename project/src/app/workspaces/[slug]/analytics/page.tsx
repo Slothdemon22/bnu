@@ -239,6 +239,54 @@ export default function WorkspaceAnalyticsPage() {
               </div>
             </div>
           </div>
+
+          {/* Team Member Performance */}
+          <div className="bg-white dark:bg-gray-950 rounded-[2.5rem] border border-stone-100 dark:border-gray-800 p-8 shadow-sm">
+            <h3 className="text-xl font-black uppercase tracking-tighter text-stone-900 dark:text-white mb-6 flex items-center gap-2">
+              <Users className="w-5 h-5 text-emerald-500" /> Team Performance
+            </h3>
+            <div className="space-y-6">
+              {Array.from(
+                tasks.reduce((acc, task) => {
+                  task.assignees?.forEach((assignee: any) => {
+                    if (!acc.has(assignee.id)) {
+                      acc.set(assignee.id, { ...assignee, total: 0, completed: 0 })
+                    }
+                    const data = acc.get(assignee.id)!
+                    data.total += 1
+                    if (task.status === 'done') data.completed += 1
+                  })
+                  return acc
+                }, new Map<number, any>())
+                .values()
+              ).map((member: any) => {
+                const memberRate = member.total > 0 ? Math.round((member.completed / member.total) * 100) : 0
+                return (
+                  <div key={member.id} className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-gray-800 overflow-hidden shrink-0">
+                          {member.imageUrl ? (
+                            <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="flex items-center justify-center w-full h-full text-xs font-bold">{member.name?.[0] || '?'}</span>
+                          )}
+                        </div>
+                        <span className="text-sm font-bold text-stone-900 dark:text-white truncate max-w-[120px]">{member.name}</span>
+                      </div>
+                      <span className="text-xs font-black text-stone-400 uppercase tracking-widest">{member.completed}/{member.total} Tasks</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-stone-100 dark:bg-gray-900 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${memberRate}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+              {tasks.length === 0 || !tasks.some(t => t.assignees?.length > 0) ? (
+                 <p className="text-xs font-bold text-stone-400 uppercase tracking-widest text-center">No assigned tasks yet</p>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </div>

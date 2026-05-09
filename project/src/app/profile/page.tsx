@@ -4,13 +4,23 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Mail, Shield, Settings, Bell, User as UserIcon, LogOut, ChevronLeft, Target, Award, Star } from 'lucide-react'
+import { Trophy, Mail, Shield, Settings, Bell, User as UserIcon, LogOut, ChevronLeft, Target, Award, Star, Moon, Sun, Monitor } from 'lucide-react'
 import Navbar from '@/components/custom/Navbar'
 import Footer from '@/components/custom/Footer'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/ToasterProvider'
+import { useTheme } from 'next-themes'
 
-type User = { id: number; email: string; name: string | null; role: string; imageUrl?: string | null; points: number }
+type User = { 
+  id: number; 
+  email: string; 
+  name: string | null; 
+  role: string; 
+  imageUrl?: string | null; 
+  points: number;
+  bio?: string | null;
+  notificationsEnabled?: boolean;
+}
 
 type NotificationItem = {
   id: number
@@ -39,6 +49,10 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile')
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [loadingNotifications, setLoadingNotifications] = useState(false)
+  
+  const { theme, setTheme } = useTheme()
+  const [bio, setBio] = useState('')
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true)
 
   useEffect(() => {
     if (!authLoading && !authUser) {
@@ -51,6 +65,8 @@ export default function ProfilePage() {
         .then((data) => {
           setUser(data.user)
           setName(data.user?.name ?? '')
+          setBio(data.user?.bio ?? '')
+          setNotificationsEnabled(data.user?.notificationsEnabled ?? true)
         })
         .catch(() => toast.error('Failed to load profile'))
         .finally(() => setLoading(false))
@@ -125,18 +141,35 @@ export default function ProfilePage() {
       const res = await fetch('/api/auth/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || null }),
+        body: JSON.stringify({ name: name.trim() || null, bio: bio.trim() || null }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to update')
       setUser(data.user)
       setName(data.user?.name ?? '')
+      setBio(data.user?.bio ?? '')
       setEditing(false)
       toast.success('Profile updated')
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleToggleNotifications(enabled: boolean) {
+    setNotificationsEnabled(enabled)
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationsEnabled: enabled }),
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      toast.success(enabled ? 'Notifications enabled' : 'Notifications disabled')
+    } catch {
+      toast.error('Failed to update preferences')
+      setNotificationsEnabled(!enabled)
     }
   }
 
@@ -305,6 +338,19 @@ export default function ProfilePage() {
                       className="w-full rounded-xl border border-stone-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
                   </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 dark:text-gray-300 mb-1.5">
+                      Bio
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell us about your work..."
+                      rows={3}
+                      className="w-full rounded-xl border border-stone-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                    />
+                  </div>
 
                   <div className="flex gap-2">
                     <button
@@ -319,6 +365,7 @@ export default function ProfilePage() {
                       onClick={() => {
                         setEditing(false)
                         setName(user.name ?? '')
+                        setBio(user.bio ?? '')
                       }}
                       className="px-4 py-2.5 rounded-xl border border-stone-300 dark:border-gray-600 text-stone-700 dark:text-gray-300 font-medium hover:bg-stone-50 dark:hover:bg-gray-700 transition-colors"
                     >
@@ -347,6 +394,14 @@ export default function ProfilePage() {
                         {user.points} XP
                       </dd>
                     </div>
+                    {user.bio && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-stone-500 dark:text-gray-400">Bio</dt>
+                        <dd className="font-medium text-stone-900 dark:text-white mt-0.5 whitespace-pre-wrap">
+                          {user.bio}
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                   <button
                     type="button"
@@ -468,28 +523,46 @@ export default function ProfilePage() {
               </p>
             </div>
             <div className="divide-y divide-stone-200 dark:divide-gray-700">
-              <div className="flex items-center justify-between p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4">
                 <div>
-                  <p className="font-medium text-stone-900 dark:text-white">Notifications</p>
-                  <p className="text-sm text-stone-500 dark:text-gray-400">Email and push</p>
+                  <p className="font-medium text-stone-900 dark:text-white">Theme Preference</p>
+                  <p className="text-sm text-stone-500 dark:text-gray-400">Choose how Momentum looks to you</p>
                 </div>
-                <span className="text-xs text-stone-400 dark:text-gray-500 px-2 py-1 rounded-full bg-stone-100 dark:bg-gray-700">
-                  Coming soon
-                </span>
+                <div className="flex p-1 rounded-xl bg-stone-100 dark:bg-gray-700 w-fit">
+                  <button 
+                    onClick={() => setTheme('light')}
+                    className={`flex items-center justify-center p-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-500 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white'}`}
+                  >
+                    <Sun className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setTheme('system')}
+                    className={`flex items-center justify-center p-2 rounded-lg transition-colors ${theme === 'system' ? 'bg-white dark:bg-gray-600 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-stone-500 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white'}`}
+                  >
+                    <Monitor className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setTheme('dark')}
+                    className={`flex items-center justify-center p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-600 text-emerald-400 shadow-sm' : 'text-stone-500 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white'}`}
+                  >
+                    <Moon className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex items-center justify-between p-4">
                 <div>
-                  <p className="font-medium text-stone-900 dark:text-white">Privacy</p>
-                  <p className="text-sm text-stone-500 dark:text-gray-400">Profile visibility</p>
+                  <p className="font-medium text-stone-900 dark:text-white">Push Notifications</p>
+                  <p className="text-sm text-stone-500 dark:text-gray-400">Receive alerts for tasks and mentions</p>
                 </div>
-                <span className="text-xs text-stone-400 dark:text-gray-500 px-2 py-1 rounded-full bg-stone-100 dark:bg-gray-700">
-                  Coming soon
-                </span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={notificationsEnabled} onChange={(e) => handleToggleNotifications(e.target.checked)} />
+                  <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
+                </label>
               </div>
               <div className="flex items-center justify-between p-4">
                 <div>
-                  <p className="font-medium text-stone-900 dark:text-white">Security</p>
-                  <p className="text-sm text-stone-500 dark:text-gray-400">Password & 2FA</p>
+                  <p className="font-medium text-stone-900 dark:text-white">Privacy & Visibility</p>
+                  <p className="text-sm text-stone-500 dark:text-gray-400">Control who sees your profile</p>
                 </div>
                 <span className="text-xs text-stone-400 dark:text-gray-500 px-2 py-1 rounded-full bg-stone-100 dark:bg-gray-700">
                   Coming soon

@@ -42,7 +42,7 @@ function Footer() {
           <Marquee className="[--duration:20s]" repeat={1}>
             {["F", "L", "O", "W", "S", "Y", "N", "C"].map((char, idx) => (
               <span
-                key={`flowsync-outline-${idx}`}
+                key={`momentum-outline-${idx}`}
                 className={`text-primary-foreground/80 footer-slang font-extrabold uppercase px-4`}
               >
                 {char}
@@ -68,9 +68,9 @@ function Footer() {
                    itemType="https://schema.org/Organization"
                  >
                    <p className="text-2xl font-bold" itemProp="name">
-                     FlowSync
+                     Momentum
                    </p>
-                   <p className="text-sm">Copyrights © All Rights Reserved by FlowSync</p>
+                   <p className="text-sm">Copyrights © All Rights Reserved by Momentum</p>
                    <p className="text-sm text-white/60">
                      AI-Powered Task Management for Efficient Teams
                    </p>

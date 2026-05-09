@@ -118,7 +118,7 @@ export function WorkspaceSidebar() {
         </div>
         {!isCollapsed && (
           <span className="font-bold text-xl tracking-tight text-stone-900 dark:text-white uppercase tracking-tighter">
-            FlowSync
+            Momentum
           </span>
         )}
       </div>

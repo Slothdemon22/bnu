@@ -67,9 +67,9 @@ function HomePage() {
         className="hero space-y-4 pt-[116px] pb-[48px] md:pt-[128px] md:pb-[128px] md:text-center lg:pt-[140px] lg:pb-[96px]"
       >
         <SectionHeading
-          badge="Productivity Reimagined"
-          heading="AI-Powered Task Management for Efficient Teams"
-          description="Sync your team's workflow with intelligent task prioritization, real-time collaboration, and automated meeting insights. Built for the modern enterprise."
+          badge="Productivity Gamified"
+          heading="Turn Your Team's Tasks into Epic Missions"
+          description="Experience the future of work with AI-powered task orchestration, real-time collaboration, and a high-fidelity gamification engine that rewards your team's best work."
           icon={Sparkles}
           size="lg"
           align="center"

@@ -124,9 +124,9 @@ function Testimonial() {
         {/* Header */}
         <SectionHeading
           ref={headingRef}
-          badge="Testimonials"
-          heading="Meet our happy clients"
-          description="Read what our clients say about working with Ionio."
+          badge="User Praise"
+          heading="What Power Users Are Saying"
+          description="Read how Momentum has transformed productivity for teams across the globe."
           size="md"
           align="center"
           as="h2"
@@ -164,10 +164,10 @@ function Testimonial() {
                 data-stat-item="true"
               >
                 <div className="text-heading text-3xl font-semibold sm:text-4xl md:text-5xl">
-                  120+
+                  10k+
                 </div>
                 <p className="text-label mt-1 text-sm sm:mt-2 sm:text-base">
-                  AI-powered projects delivered
+                  Tasks completed with AI
                 </p>
               </div>
 
@@ -176,10 +176,10 @@ function Testimonial() {
                 data-stat-item="true"
               >
                 <div className="text-heading text-3xl font-semibold sm:text-4xl md:text-5xl">
-                  50+
+                  500k+
                 </div>
                 <p className="text-label mt-1 text-sm sm:mt-2 sm:text-base">
-                  Global clients we've partnered with
+                  XP points awarded this month
                 </p>
               </div>
 
@@ -188,10 +188,10 @@ function Testimonial() {
                 data-stat-item="true"
               >
                 <div className="text-heading text-3xl font-semibold sm:text-4xl md:text-5xl">
-                  $50k+
+                  98%
                 </div>
                 <p className="text-label mt-1 text-sm sm:mt-2 sm:text-base">
-                  Monthly recurring revenue generated
+                  Team engagement increase
                 </p>
               </div>
             </div>

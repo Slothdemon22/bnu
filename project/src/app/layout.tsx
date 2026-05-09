@@ -26,13 +26,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FlowSync - AI-Powered Task Manager for Teams",
-  description: "FlowSync combines AI task management, video meetings, real-time chat, and analytics into one seamless platform built for high-performance teams.",
+  title: "Momentum - Gamified AI Productivity Platform",
+  description: "Momentum combines AI task management, gamification, video meetings, and advanced analytics into a single sleek platform.",
+  openGraph: {
+    title: "Momentum - Gamified AI Productivity Platform",
+    description: "Level up your productivity with AI-driven task management and gamified workspaces.",
+    url: "https://momentum-app.vercel.app", // Adjust if real domain is known
+    siteName: "Momentum",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Momentum Open Graph Image",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Momentum - Gamified AI Productivity Platform",
+    description: "Level up your productivity with AI-driven task management and gamified workspaces.",
+    images: ["/og-image.png"],
+  },
 };
 
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { UserOnboardingGuard } from "@/components/auth/UserOnboardingGuard";
 import { AppLayout } from "@/components/custom/AppLayout";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -40,16 +63,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${manrope.variable} ${ibmPlexMono.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <ToasterProvider />
-          <UserOnboardingGuard>
-            <AppLayout>{children}</AppLayout>
-          </UserOnboardingGuard>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <ToasterProvider />
+            <UserOnboardingGuard>
+              <AppLayout>{children}</AppLayout>
+            </UserOnboardingGuard>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

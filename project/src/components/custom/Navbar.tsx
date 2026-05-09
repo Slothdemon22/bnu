@@ -3,7 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
-import { Github } from "lucide-react";
+import { Bell } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -216,7 +216,7 @@ function Navbar() {
               <Link
                 href="/"
                 className="focus:ring-ring flex items-center gap-2 rounded-md transition-opacity hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                aria-label="FlowSync - Return to homepage"
+                aria-label="Momentum - Return to homepage"
                 aria-describedby="logo-description"
               >
                 {workspace?.imageUrl ? (
@@ -229,17 +229,22 @@ function Navbar() {
                     </span>
                   </div>
                 ) : (
-                  <img
-                    src="https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/62528d398a42424d6e390f57_horizontal-logo-transperant.png"
-                    alt="FlowSync Logo"
-                    className="h-8 w-auto"
-                    width="120"
-                    height="32"
-                    aria-hidden="true"
-                  />
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/logo.png"
+                      alt="Momentum Logo"
+                      className="h-10 w-10 rounded-lg shadow-sm"
+                      width="40"
+                      height="40"
+                      aria-hidden="true"
+                    />
+                    <span className="font-black text-xl tracking-tighter text-stone-900 dark:text-white">
+                      Momentum
+                    </span>
+                  </div>
                 )}
                 <span id="logo-description" className="sr-only">
-                  {workspace ? `${workspace.name} - ${workspace.imageUrl ? 'Custom Workspace' : 'FlowSync'}` : 'FlowSync - AI-Powered Task Management for Teams'}
+                  {workspace ? `${workspace.name} - ${workspace.imageUrl ? 'Custom Workspace' : 'Momentum'}` : 'Momentum - AI-Powered Task Management for Teams'}
                 </span>
               </Link>
             </div>
@@ -276,22 +281,11 @@ function Navbar() {
             </ul>
 
             <div className="flex items-center gap-3">
-              {/* GitHub Icon */}
-              <Link
-                href="https://github.com/pinak3748"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="focus:ring-ring flex items-center justify-center rounded-md p-2 transition-colors hover:bg-accent"
-                aria-label="Visit our GitHub repository"
-              >
-                <Github className="h-5 w-5 text-primary" />
-              </Link>
-
               {user ? (
                 <Button
                   size={"sm"}
                   variant="outline"
-                  className="text-sm border-stone-200 dark:border-gray-700"
+                  className="text-sm border-stone-200 dark:border-gray-700 hidden sm:inline-flex"
                   onClick={logout}
                 >
                   Logout
@@ -304,7 +298,7 @@ function Navbar() {
                   <Button
                     size={"sm"}
                     className="text-sm"
-                    aria-label="Get started with FlowSync"
+                    aria-label="Get started with Momentum"
                     onClick={() => window.location.href = '/signup'}
                   >
                     Get Started
@@ -382,20 +376,7 @@ function Navbar() {
                       );
                     })}
                   </ul>
-                  <div className="border-t pt-4 space-y-3">
-                    {/* GitHub Link */}
-                    <Link
-                      href="https://github.com/pinak3748"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none"
-                      aria-label="Visit our GitHub repository"
-                      onClick={closeMenu}
-                    >
-                      <Github className="h-5 w-5 text-primary" />
-                      GitHub
-                    </Link>
-
+                  <div className="border-t border-stone-200 dark:border-gray-800 pt-4 space-y-3">
                     {user ? (
                       <Button
                         className="w-full"
@@ -415,7 +396,7 @@ function Navbar() {
                         </Button>
                         <Button
                           className="w-full"
-                          aria-label="Get started with FlowSync"
+                          aria-label="Get started with Momentum"
                           onClick={() => { closeMenu(); window.location.href = '/signup'; }}
                         >
                           Get Started

@@ -12,6 +12,7 @@ interface User {
   onboardingCompleted?: boolean
   profession?: string | null
   workspaceName?: string | null
+  isPremium?: boolean
 }
 
 interface AuthContextType {

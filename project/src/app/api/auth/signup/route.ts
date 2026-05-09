@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       const { notifyUser } = await import('@/lib/activity')
       await notifyUser({
         userId: user.id,
-        title: 'Welcome to FlowSync!',
+        title: 'Welcome to Momentum!',
         message: `We're excited to have you here, ${user.name || 'User'}. Start by creating your first workspace.`,
         type: 'user_registered',
         entityType: 'user',

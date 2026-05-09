@@ -94,13 +94,13 @@ export async function POST(
 
     console.log('[INVITE_API] Attempting to send email via Resend to:', email)
     const resendResponse = await resend.emails.send({
-      from: 'FlowSync <onboarding@zalnex.me>',
+      from: 'Momentum <onboarding@zalnex.me>',
       to: email,
-      subject: `You've been invited to join ${invite.workspace.name} on FlowSync`,
+      subject: `You've been invited to join ${invite.workspace.name} on Momentum`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 12px;">
           <h1 style="color: #059669; font-size: 24px; font-weight: 800; margin-bottom: 16px;">Welcome to the Team!</h1>
-            ${user.name || user.email} has invited you to join the <strong>${invite.workspace.name}</strong> workspace on FlowSync as a <strong>${invite.role}</strong>.
+            ${user.name || user.email} has invited you to join the <strong>${invite.workspace.name}</strong> workspace on Momentum as a <strong>${invite.role}</strong>.
           </p>
           <div style="margin: 32px 0;">
             <a href="${inviteUrl}" style="background-color: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">

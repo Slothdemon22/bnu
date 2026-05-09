@@ -49,7 +49,7 @@ export function DashboardSidebar() {
         </div>
         {!isCollapsed && (
           <span className="font-bold text-xl tracking-tight text-stone-900 dark:text-white">
-            FlowSync
+            Momentum
           </span>
         )}
       </div>

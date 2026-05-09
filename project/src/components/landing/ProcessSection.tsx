@@ -27,50 +27,50 @@ const ProcessCards: React.FC = () => {
 
   const process: processType[] = [
     {
-      title: "Discovery & Strategy",
-      tagline: "Getting to Know Your Big Idea",
+      title: "Seamless Onboarding",
+      tagline: "Define Your Identity",
       description:
-        "We begin by diving deep into your vision, your goals, and the problem you’re solving. This stage is all about uncovering the story behind your idea and understanding why it matters. Through thorough market research and a detailed competitor analysis, we identify unique opportunities and define the best way to position your product for long-term success. This step ensures that your foundation is solid before any building begins.",
+        "Start by setting up your workspace and personal profile. Define your profession and primary goals to help Momentum's AI tailor the experience to your specific team needs. Whether you're a startup or a creative agency, we adapt to you.",
       deliverables: [
-        { item: "Detailed market insights" },
-        { item: "Comprehensive competitor breakdown" },
-        { item: "A winning strategy tailored to your product" },
+        { item: "Custom workspace creation" },
+        { item: "Role-based profile setup" },
+        { item: "Team invitation system" },
       ],
       bg_image: "https://res.cloudinary.com/dieth2xb3/image/upload/v1755799085/ssimage_bxr8i6.png",
     },
     {
-      title: "Planning & Wireframes",
-      tagline: "Mapping Out Your Vision",
+      title: "AI Task Orchestration",
+      tagline: "Voice to Actionable Insight",
       description:
-        "Once we know where you want to go, we carefully map out how to get there. Our team creates structured wireframes and a detailed project scope so that everyone involved knows exactly what’s being built and how. This stage eliminates guesswork and brings clarity to the entire process. By the end, you’ll have a well-defined roadmap that aligns with your vision and keeps the project on track from start to finish.",
+        "Use our advanced Voice AI to dictate your project requirements. Momentum intelligently parses your speech into detailed tasks and milestones, automatically assigning difficulty levels and estimating realistic completion dates based on complexity.",
       deliverables: [
-        { item: "Complete project blueprint" },
-        { item: "High-fidelity wireframes" },
-        { item: "Technical implementation plan" },
+        { item: "Voice-to-Task parsing" },
+        { item: "Automated milestone generation" },
+        { item: "AI-driven difficulty assessment" },
       ],
       bg_image: "https://res.cloudinary.com/dieth2xb3/image/upload/v1755804235/aaaimage_zbypst.png",
     },
     {
-      title: "Design & Development",
-      tagline: "Building Your Dream Into Reality",
+      title: "Gamified Execution",
+      tagline: "Earn XP and Level Up",
       description:
-        "This is where ideas start to take shape. Our designers and developers work hand in hand to turn your vision into a functional, scalable, and visually stunning platform. Every detail is thoughtfully crafted — from intuitive user experiences to reliable back-end systems. We combine creativity with technology to deliver a product that not only looks beautiful but also performs seamlessly and grows with your business.",
+        "Complete milestones to earn XP and climb the ranks. Our high-fidelity gamification engine keeps your team motivated with visual trophies, gold badges, and real-time celebrations for every win, turning productivity into a rewarding journey.",
       deliverables: [
-        { item: "A fully designed user-friendly platform" },
-        { item: "Robust, scalable development" },
-        { item: "End-to-end tested product ready for growth" },
+        { item: "Real-time XP tracking" },
+        { item: "Rank & Badge progression" },
+        { item: "Live milestone celebrations" },
       ],
       bg_image: "https://res.cloudinary.com/dieth2xb3/image/upload/v1755804376/fasimage_skodum.png",
     },
     {
-      title: "Launch & Growth",
-      tagline: "Getting You Out There",
+      title: "Pro Scaling",
+      tagline: "Unlimited Growth Potential",
       description:
-        "Bringing your platform to life is just the beginning of the journey. We provide full support for launch, making sure everything runs smoothly and your product reaches the right audience. Beyond launch day, we help you craft and refine marketing strategies, track performance, and implement optimizations that fuel sustainable growth. Our focus is on making sure your business doesn’t just go live, but thrives in the market.",
+        "Upgrade to our Pro tier via Stripe to unlock unlimited workspaces and priority AI features. Scale your operations with advanced team recommendations and deep analytics that help you match the right talent to the right mission.",
       deliverables: [
-        { item: "Hands-on launch support" },
-        { item: "Tailored marketing strategy" },
-        { item: "Actionable tips and ongoing growth guidance" },
+        { item: "Stripe-powered Pro upgrades" },
+        { item: "Unlimited team workspaces" },
+        { item: "Advanced member recommendations" },
       ],
       bg_image: "https://res.cloudinary.com/dieth2xb3/image/upload/v1755804235/aaaimage_zbypst.png",
     },

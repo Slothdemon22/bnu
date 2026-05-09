@@ -21,7 +21,7 @@ export default function PricingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           amount: price,
-          productName: `FlowSync ${plan} Plan`,
+          productName: `Momentum ${plan} Plan`,
           planType: plan.toLowerCase()
         })
       })

@@ -65,7 +65,7 @@ export default function PropertiesPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--muted)]">
           Project Catalog
         </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">FlowSync Projects</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Momentum Projects</h1>
         <p className="mt-3 max-w-[58ch] text-sm text-[color:var(--muted)] sm:text-base">
           Explore verified listings and request advisor-guided meetings directly from each property page.
         </p>

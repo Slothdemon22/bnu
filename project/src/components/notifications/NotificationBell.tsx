@@ -137,12 +137,19 @@ export function NotificationBell() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen)
+          if (!isOpen && unreadCount > 0) {
+            markAsRead()
+          }
+        }}
         className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-900 text-stone-500 relative transition-all active:scale-95"
       >
         <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bounce-subtle' : ''}`} />
         {unreadCount > 0 && (
-          <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white dark:border-gray-950 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+          <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm border-2 border-white dark:border-gray-950">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </button>
 

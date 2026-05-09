@@ -2,17 +2,17 @@ export const caseStudies = [
   {
     main_image_src:
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356325/Screenshot_2025-08-28_at_10.14.32_AM_vndeou.png",
-    project_title: "Reimagining business insurance with a data-driven, AI-powered platform design.",
+    project_title: "Gamify your workflow with XP, Ranks, and addictive milestone tracking.",
     logo_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/665dcd0c7dc5304519a9a4e0_Standard%20Draft.png",
     description:
-      "We designed, built & deployed on Standard Draft, an AI-powered legal signing platform. It was a multi-year journey.",
+      "We built a high-fidelity gamification engine that turns mundane tasks into rewarding missions with real-time feedback.",
     features: [
-      "R&D-ed & built first-of-it's kind legal contract templating engine to draft & negotiate enterprise-ready NDAs in minutes via wizard-style interface.",
-      "Cut down contract creation time from ~31 days to hours. >10x faster. Several times cheaper.",
+      "Dynamic XP system that rewards users for completing milestones and meeting tight deadlines.",
+      "Visual rank hierarchy from Novice to Expert, featuring premium gold badges and trophy icons.",
     ],
     case_study_link: "#",
-    name: "Standard Draft",
+    name: "Gamification Engine",
     demo_images: [
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356325/Screenshot_2025-08-28_at_10.14.32_AM_vndeou.png",
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356325/Screenshot_2025-08-28_at_10.14.32_AM_vndeou.png",
@@ -20,25 +20,24 @@ export const caseStudies = [
     ],
     test_img:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667adecbe7684da501b70952_image%2014.jpg",
-    testimonial: `"Ionio didn't disappear after the MVP was built. They continued to work with us to fix bugs and make improvements based on user feedback."`,
-    founder_name: "Ryan Samii",
-    position: "Founder & CEO",
+    testimonial: `"Momentum's XP system completely changed how our team views deadlines. It's not just work anymore; it's a mission."`,
+    founder_name: "Alex Rivera",
+    position: "Product Lead",
   },
   {
     main_image_src:
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356657/Screenshot_2025-08-28_at_10.20.39_AM_v5cnur.png",
-    project_title: "Enhancing Perlon AI’s user experience for sales success",
+    project_title: "Intelligent Voice-to-Task AI with automated milestone generation.",
     logo_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/6659ae5c3907ce45e187ce85_dex-logo.png",
     description:
-      "Ionio designed, trained, built & deployed an AI-powered personalized slide deck creation & analytics SaaS platform from scratch in ~8 weeks.",
+      "Our Groq-powered AI understands natural speech to create detailed tasks, assign difficulties, and set smart deadlines.",
     features: [
-      "Create slide decks in minutes rather than hours. Personalized decks convert more. Successful outcomes.",
-      "Dex scrapes Google, LinkedIn & company website for your prospect's info.",
-      "Drastically cut down repetitive labor for SDRs from 20+ hours/month down to just ~2h. 10x faster. 20x cheaper.",
+      "Voice dictation that parses complex requirements into actionable milestones in under 2 seconds.",
+      "Automated difficulty assessment that intelligently balances XP rewards across the team.",
     ],
     case_study_link: "#",
-    name: "Dex",
+    name: "Voice AI Integration",
     demo_images: [
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356657/Screenshot_2025-08-28_at_10.20.39_AM_v5cnur.png",
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356657/Screenshot_2025-08-28_at_10.20.39_AM_v5cnur.png",
@@ -46,23 +45,23 @@ export const caseStudies = [
     ],
     test_img:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667adece3c44f7ae7233676d_video%2011.jpg",
-    testimonial: `"Even though we are from the US and working with a company overseas, they made the experience very personable."`,
-    founder_name: "Reid Chong",
-    position: "Founder & CEO",
+    testimonial: `"The Voice AI is a game changer. I can dictate an entire project plan while walking to a meeting and have it ready for my team."`,
+    founder_name: "Sarah Chen",
+    position: "Engineering Director",
   },
   {
     main_image_src:
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356701/Screenshot_2025-08-28_at_10.21.20_AM_qr8ko9.png",
-    project_title: "Refining Scout’s interface and UX for scalable AI automation",
+    project_title: "Real-time Collaboration with Pusher-powered live updates.",
     logo_src: "https://veerview.ai/assets/images/image05.jpg?v=505d141a",
     description:
-      "Ionio designed, developed and deployed Veerview AI, a prospecting & data enrichment SaaS for outbound sales —  12 weeks, team of 3.",
+      "Keep everyone in sync with instant notifications and live activity feeds that never miss a beat.",
     features: [
-      "Scrape emails from our ~54million brand & employees database based on 50+ datapoints with <5 clicks.",
-      "Enrich data from 10+ sources with proprietary scraper for ecommerce & website data, SEO metrics & social media metrics through a single portal",
+      "Seamless Pusher integration for real-time task updates, team chat, and level-up celebrations.",
+      "Context-aware team recommendations that match the right expert to the right difficulty level.",
     ],
     case_study_link: "#",
-    name: "Veerview",
+    name: "Live Orchestration",
     demo_images: [
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356701/Screenshot_2025-08-28_at_10.21.20_AM_qr8ko9.png",
       "https://res.cloudinary.com/dieth2xb3/image/upload/v1756356701/Screenshot_2025-08-28_at_10.21.20_AM_qr8ko9.png",
@@ -70,24 +69,24 @@ export const caseStudies = [
     ],
     test_img:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667adecbea18eeb8f0d91b57_video%204.jpg",
-    testimonial: `"Communication is free-flowing and Veerview can almost always get a hold of someone on Ionio’s team throughout the day."`,
-    founder_name: "TJ Gottfried",
-    position: "Founder",
+    testimonial: `"The live updates and team recommendations have cut our meeting time by 40%. We always know who's doing what."`,
+    founder_name: "James Wilson",
+    position: "COO",
   },
   {
     main_image_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667a854a4fccb876bd2ac5b7_supplierHQ.png",
-    project_title: "A complete transformation of Acodei’s interface design and user experience",
+    project_title: "Subscription management with Stripe for scalable team workspaces.",
     logo_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/665da4b5d559ba95bc6af154_supplierhq.svg",
     description:
-      "Ionio designed, developed & launched the SaaS MVP from scratch in 8 weeks in late-2023. Scaled until it crossed several thousand paying users. Then, transferred it over to the in-house tech team.",
+      "A complete SaaS model with Free and Pro tiers, enabling unlimited workspace creation and priority support.",
     features: [
-      "Built a robust production-grade system to support large influx of users during launch — implemented intelligent-caching for sub-2second load times on search & database lookups.",
-      "24/7 availability & responsive support during critical launch & beta period",
+      "Integrated Stripe checkout for seamless Pro upgrades and automated premium badge assignment.",
+      "Robust usage limits that protect system resources while offering generous free access.",
     ],
     case_study_link: "#",
-    name: "SuppierHQ",
+    name: "Subscription Suite",
     demo_images: [
       "https://pbs.twimg.com/media/GpPxvDUWEAAILZW?format=jpg&name=4096x4096",
       "https://pbs.twimg.com/media/GpPxvDUWEAAILZW?format=jpg&name=4096x4096",
@@ -95,24 +94,24 @@ export const caseStudies = [
     ],
     test_img:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667adecda06c8f453168901f_video%2012.jpg",
-    testimonial: `"Ionio was very professional and provided excellent support throughout the entire process."`,
-    founder_name: "Brad Milne",
-    position: "Co-Founder",
+    testimonial: `"Upgrading to Pro was effortless. The additional workspaces and AI features have scaled our agency to new heights."`,
+    founder_name: "Emily Clark",
+    position: "Agency Owner",
   },
   {
     main_image_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/6672c97bbd3718b215565426_Wordout.png",
-    project_title: "Bridging the gap between cutting-edge technology and user accessibility",
+    project_title: "Modern UI/UX with GSAP animations and sleek dark mode support.",
     logo_src:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667404a553e0149bc2d16e69_wordout.png",
     description:
-      "We designed, developed, deployed & scaled WordOut an AI-powered social media content creation, repurposement & scheduling platform. MVP in 6 weeks. First of it’s kind in 2022. ✨",
+      "A premium interface designed to WOW users with smooth transitions, glassmorphism, and responsive layouts.",
     features: [
-      "~20x faster than with manual effort. Convert videos, ebooks, docs into 100s of social media content pieces with a single click.",
-      "Automated 90% of the content creation task. Saved $7-15k/month in manual labour",
+      "Advanced GSAP scroll-triggered animations that bring the workspace data to life.",
+      "Optimized dark mode and mobile-first design for a consistent experience across all devices.",
     ],
     case_study_link: "#",
-    name: "Wordout",
+    name: "Premium Interface",
     demo_images: [
       "https://pbs.twimg.com/media/GpPxvDUWEAAILZW?format=jpg&name=4096x4096",
       "https://pbs.twimg.com/media/GpPxvDUWEAAILZW?format=jpg&name=4096x4096",
@@ -120,9 +119,9 @@ export const caseStudies = [
     ],
     test_img:
       "https://cdn.prod.website-files.com/62528d398a42424ab6390ee1/667adece0c823fe11cb6aa89_video%2010.jpg",
-    testimonial: `"Ionio's team was understanding about this and did not get discouraged when new bugs were found."`,
-    founder_name: "Michael Guimarin",
-    position: "Founder",
+    testimonial: `"The interface is simply stunning. Our team actually enjoys managing tasks now because the UX is so fluid."`,
+    founder_name: "David Park",
+    position: "Creative Director",
   },
 ];
 

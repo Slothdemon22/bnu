@@ -132,7 +132,7 @@ export async function POST(
                   Or copy and paste this link: <br/> <a href="${roomUrl}">${roomUrl}</a>
                 </p>
                 <p style="margin-top: 24px; color: #6b7280; font-size: 12px;">
-                  — FlowSync Team
+                  — Momentum Team
                 </p>
               </div>
             `,

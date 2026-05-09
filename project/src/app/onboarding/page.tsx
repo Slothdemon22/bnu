@@ -189,7 +189,7 @@ export default function OnboardingPage() {
                 Design your <span className="text-emerald-500">Sync.</span>
               </h1>
               <p className="text-xl text-stone-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed font-medium">
-                FlowSync adapts to how you work. Let's create an environment built for high-performance teams.
+                Momentum adapts to how you work. Let's create an environment built for high-performance teams.
               </p>
             </div>
             <button

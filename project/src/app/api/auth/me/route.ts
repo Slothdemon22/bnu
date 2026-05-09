@@ -36,6 +36,8 @@ export async function GET() {
       primaryGoal: dbUser.primaryGoal,
       points: dbUser.points || 0,
       isPremium: !!dbUser.isPremium,
+      bio: dbUser.bio,
+      notificationsEnabled: dbUser.notificationsEnabled,
     },
   })
 }
@@ -47,7 +49,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}))
-  const { name, imageUrl, onboardingCompleted, profession, workspaceName, teamSize, primaryGoal, workspaceImageUrl } = body
+  const { name, imageUrl, onboardingCompleted, profession, workspaceName, teamSize, primaryGoal, workspaceImageUrl, bio, notificationsEnabled } = body
 
   const data: { 
     name?: string | null; 
@@ -57,6 +59,8 @@ export async function PATCH(req: NextRequest) {
     workspaceName?: string | null;
     teamSize?: string | null;
     primaryGoal?: string | null;
+    bio?: string | null;
+    notificationsEnabled?: boolean;
   } = {}
   
   if (typeof name === 'string') data.name = name.trim() || undefined
@@ -66,6 +70,8 @@ export async function PATCH(req: NextRequest) {
   if (typeof workspaceName === 'string') data.workspaceName = workspaceName.trim() || null
   if (typeof teamSize === 'string') data.teamSize = teamSize.trim() || null
   if (typeof primaryGoal === 'string') data.primaryGoal = primaryGoal.trim() || null
+  if (typeof bio === 'string') data.bio = bio.trim() || null
+  if (typeof notificationsEnabled === 'boolean') data.notificationsEnabled = notificationsEnabled
 
   if (Object.keys(data).length === 0 && !workspaceImageUrl) {
     return NextResponse.json(
@@ -106,7 +112,8 @@ export async function PATCH(req: NextRequest) {
     select: { 
       id: true, email: true, name: true, role: true, imageUrl: true, 
       onboardingCompleted: true, profession: true, workspaceName: true,
-      teamSize: true, primaryGoal: true, points: true, isPremium: true
+      teamSize: true, primaryGoal: true, points: true, isPremium: true,
+      bio: true, notificationsEnabled: true
     },
   })
 
@@ -131,6 +138,8 @@ export async function PATCH(req: NextRequest) {
       primaryGoal: updated.primaryGoal,
       points: updated.points || 0,
       isPremium: !!updated.isPremium,
+      bio: updated.bio,
+      notificationsEnabled: updated.notificationsEnabled,
     },
   })
 }

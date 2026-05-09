@@ -46,6 +46,8 @@ model User {
   points Int @default(0)
   isPremium Boolean @default(false)
   stripeCustomerId String?
+  bio String?
+  notificationsEnabled Boolean @default(true)
 }
 
 model Workspace {
