@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
 import { logActivity, notifyUser } from '@/lib/activity'
 
+const PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
+
 export async function GET() {
   try {
     const admin = await requireAdmin()
@@ -151,7 +153,10 @@ export async function POST(req: NextRequest) {
       const roomCode = roomData.code || roomData.room_code
 
       // Generate room URL
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const baseUrl =
+        process.env.NODE_ENV === 'production'
+          ? PRODUCTION_APP_URL
+          : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
       const roomUrl = `${baseUrl}/meeting?room=${roomId}`
 
       // Update meeting request

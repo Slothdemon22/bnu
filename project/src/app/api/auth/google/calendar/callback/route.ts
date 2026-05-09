@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { prisma } from '@/lib/prisma'
 
+const PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
+
+function getBaseAppUrl(request: Request) {
+  if (process.env.NODE_ENV === 'production') {
+    return PRODUCTION_APP_URL
+  }
+  const protocol = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http')
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000'
+  return `${protocol}://${host}`
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
@@ -14,9 +25,7 @@ export async function GET(request: Request) {
   const userId = parseInt(userIdStr)
 
   try {
-    const protocol = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http')
-    const host = request.headers.get('host') || 'localhost:3000'
-    const redirectUri = `${protocol}://${host}/api/auth/google/calendar/callback`
+    const redirectUri = `${getBaseAppUrl(request)}/api/auth/google/calendar/callback`
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.OAUTH_CLIENT_ID,
@@ -34,7 +43,7 @@ export async function GET(request: Request) {
     }
 
     // Redirect to the referring page or a generic success page
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/profile?tab=integrations&success=true`)
+    return NextResponse.redirect(`${getBaseAppUrl(request)}/profile?tab=integrations&success=true`)
   } catch (error) {
     console.error('Failed to handle Google OAuth callback:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

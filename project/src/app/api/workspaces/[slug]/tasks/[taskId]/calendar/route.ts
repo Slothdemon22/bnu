@@ -3,6 +3,17 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { google } from 'googleapis'
 
+const PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
+
+function getBaseAppUrl(request: Request) {
+  if (process.env.NODE_ENV === 'production') {
+    return PRODUCTION_APP_URL
+  }
+  const protocol = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http')
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000'
+  return `${protocol}://${host}`
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string; taskId: string }> }
@@ -32,9 +43,7 @@ export async function POST(
 
     if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 })
 
-    const protocol = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http')
-    const host = request.headers.get('host') || 'localhost:3000'
-    const redirectUri = `${protocol}://${host}/api/auth/google/calendar/callback`
+    const redirectUri = `${getBaseAppUrl(request)}/api/auth/google/calendar/callback`
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.OAUTH_CLIENT_ID,
