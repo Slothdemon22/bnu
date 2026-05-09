@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/ToasterProvider'
 import { MessageThread, type Message, type Author } from '@/components/chat/MessageThread'
 import { UserAvatar } from '@/components/chat/UserAvatar'
+import { MessageSquare } from 'lucide-react'
 
 const EmojiPicker = dynamic(
   () => import('emoji-picker-react').then((mod) => mod.default),
@@ -405,7 +406,7 @@ export default function CommunityChatPage() {
                         <div className="absolute bottom-full right-0 mb-2 z-50 shadow-2xl rounded-xl overflow-hidden">
                           <EmojiPicker
                             onEmojiClick={onEmojiClick}
-                            theme={typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                            theme={(typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light') as any}
                             width={320}
                             height={400}
                           />

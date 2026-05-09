@@ -16,6 +16,7 @@ export type Message = {
   content: string
   author: Author
   createdAt: string
+  parentId?: number | null
   replies?: Message[]
   _optimistic?: boolean
 }

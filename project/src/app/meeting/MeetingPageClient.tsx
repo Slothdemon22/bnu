@@ -158,7 +158,7 @@ function MeetingPageContent() {
         return
       }
       const { hmsActions, hmsStore } = ref
-      const storeState = hmsStore.getState((s: { hmsStates?: { localPeer?: { videoTrack?: { id?: string }; audioTrack?: { id?: string } } }; localPeer?: { videoTrack?: { id?: string }; audioTrack?: { id?: string } } }) => s)
+      const storeState = hmsStore.getState((s: any) => s) as { hmsStates?: { localPeer?: { videoTrack?: { id?: string }; audioTrack?: { id?: string } } }; localPeer?: { videoTrack?: { id?: string }; audioTrack?: { id?: string } } }
       const localPeer = storeState?.hmsStates?.localPeer ?? storeState?.localPeer
       if (!localPeer) {
         retryCount++
@@ -168,9 +168,9 @@ function MeetingPageContent() {
       const vt = localPeer.videoTrack
       const at = localPeer.audioTrack
       if (vt?.id) try { await hmsActions.setEnabledTrack(vt.id, true) } catch {}
-      else if (vt) try { await hmsActions.setEnabledTrack(vt, true) } catch {}
+      else if (typeof vt === 'string') try { await hmsActions.setEnabledTrack(vt, true) } catch {}
       if (at?.id) try { await hmsActions.setEnabledTrack(at.id, true) } catch {}
-      else if (at) try { await hmsActions.setEnabledTrack(at, true) } catch {}
+      else if (typeof at === 'string') try { await hmsActions.setEnabledTrack(at, true) } catch {}
     }
     timeoutId = setTimeout(enableTracks, 2000)
     return () => {
@@ -226,7 +226,6 @@ function MeetingPageContent() {
   return (
     <div style={{ height: '100vh', position: 'relative' }}>
       <ErrorBoundary>
-        {/* @ts-expect-error - @100mslive/roomkit-react uses ref prop which triggers React 19 warning but is valid in React 18 */}
         <HMSPrebuilt
           ref={hmsRef}
           roomCode={roomCode}

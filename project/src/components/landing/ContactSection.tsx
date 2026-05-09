@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { caseStudies } from "@/data/caseStudies";
 import { cn } from "@/lib/utils";
 import { useGSAP } from "@gsap/react";
+import "@/lib/GSAPAnimations";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import { useEffect, useRef, useState } from "react";

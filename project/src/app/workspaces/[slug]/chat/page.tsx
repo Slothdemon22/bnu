@@ -370,7 +370,7 @@ export default function WorkspaceChatPage() {
                       <div className="absolute bottom-full right-0 mb-4 z-50">
                         <EmojiPicker
                           onEmojiClick={onEmojiClick}
-                          theme={typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                          theme={(typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light') as any}
                           width={300}
                           height={400}
                         />

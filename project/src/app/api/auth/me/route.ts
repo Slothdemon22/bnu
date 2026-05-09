@@ -14,7 +14,8 @@ export async function GET() {
     select: { 
       id: true, email: true, name: true, role: true, imageUrl: true, 
       onboardingCompleted: true, profession: true, workspaceName: true,
-      teamSize: true, primaryGoal: true, points: true, isPremium: true
+      teamSize: true, primaryGoal: true, points: true, isPremium: true,
+      bio: true, notificationsEnabled: true
     },
   })
 

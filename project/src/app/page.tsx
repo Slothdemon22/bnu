@@ -10,12 +10,14 @@ export const metadata: Metadata = generatePageMetadata("home");
 
 export default function Home() {
   return (
-    <div className="mx-auto max-w-6xl">
+    <main className="w-full">
       <HeroSection />
-      <CaseStudiesSection />
-      <ProcessSection />
-      <TestimonialSection />
-      <ContactSection />
-    </div>
+      <div className="mx-auto max-w-6xl">
+        <CaseStudiesSection />
+        <ProcessSection />
+        <TestimonialSection />
+        <ContactSection />
+      </div>
+    </main>
   );
 }
