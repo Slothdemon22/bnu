@@ -3,7 +3,29 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { notifyUser } from '@/lib/activity'
 
-const PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
+const DEFAULT_PRODUCTION_APP_URL = 'https://bnu-one.vercel.app'
+
+function getBaseAppUrl(request: NextRequest) {
+  const forwardedProto = request.headers.get('x-forwarded-proto')
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const host = forwardedHost || request.headers.get('host')
+  const protocol = forwardedProto || (request.url.startsWith('https') ? 'https' : 'http')
+
+  if (host && !host.includes('localhost')) {
+    return `${protocol}://${host}`
+  }
+
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
+  if (envUrl && !envUrl.includes('localhost')) {
+    return envUrl
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return DEFAULT_PRODUCTION_APP_URL
+  }
+
+  return 'http://localhost:3000'
+}
 
 export async function POST(
   req: NextRequest,
@@ -77,10 +99,7 @@ export async function POST(
       console.error("Failed to generate room code", e)
     }
 
-    const baseUrl =
-      process.env.NODE_ENV === 'production'
-        ? PRODUCTION_APP_URL
-        : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+    const baseUrl = getBaseAppUrl(req)
     const roomUrl = `${baseUrl}/meeting?room=${roomId}`
 
     // 3. Update Task
