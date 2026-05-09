@@ -14,7 +14,7 @@ export async function GET() {
     select: { 
       id: true, email: true, name: true, role: true, imageUrl: true, 
       onboardingCompleted: true, profession: true, workspaceName: true,
-      teamSize: true, primaryGoal: true
+      teamSize: true, primaryGoal: true, points: true, isPremium: true
     },
   })
 
@@ -34,6 +34,8 @@ export async function GET() {
       workspaceName: dbUser.workspaceName,
       teamSize: dbUser.teamSize,
       primaryGoal: dbUser.primaryGoal,
+      points: dbUser.points || 0,
+      isPremium: !!dbUser.isPremium,
     },
   })
 }
@@ -104,7 +106,7 @@ export async function PATCH(req: NextRequest) {
     select: { 
       id: true, email: true, name: true, role: true, imageUrl: true, 
       onboardingCompleted: true, profession: true, workspaceName: true,
-      teamSize: true, primaryGoal: true
+      teamSize: true, primaryGoal: true, points: true, isPremium: true
     },
   })
 
@@ -127,6 +129,8 @@ export async function PATCH(req: NextRequest) {
       workspaceName: updated.workspaceName,
       teamSize: updated.teamSize,
       primaryGoal: updated.primaryGoal,
+      points: updated.points || 0,
+      isPremium: !!updated.isPremium,
     },
   })
 }

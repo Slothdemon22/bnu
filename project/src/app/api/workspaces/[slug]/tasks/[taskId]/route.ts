@@ -20,7 +20,7 @@ export async function PATCH(
 
     const existingTask = await prisma.task.findUnique({
       where: { id: parseInt(taskId) },
-      include: { assignees: true }
+      include: { assignees: true, milestones: true, createdBy: true }
     })
 
     if (!existingTask) return NextResponse.json({ error: 'Task not found' }, { status: 404 })
@@ -54,6 +54,7 @@ export async function PATCH(
             description: m.description,
             status: m.status || 'pending',
             estimatedTime: m.estimatedTime,
+            difficulty: m.difficulty || 'medium',
             tags: m.tags || [],
             notes: m.notes,
             attachments: m.attachments || []
@@ -65,6 +66,52 @@ export async function PATCH(
         milestones: true
       }
     })
+
+    // Award points for newly completed milestones
+    if (milestones) {
+      let pointsToAward = 0
+      const difficultyPoints: Record<string, number> = {
+        easy: 10,
+        medium: 20,
+        hard: 50,
+        expert: 100
+      }
+
+      for (const m of milestones) {
+        if (m.status === 'completed') {
+          const oldMilestone = existingTask.milestones.find((om: any) => om.name === m.name)
+          if (!oldMilestone || oldMilestone.status !== 'completed') {
+            pointsToAward += difficultyPoints[m.difficulty || 'medium'] || 20
+          }
+        }
+      }
+
+      if (pointsToAward > 0) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { points: { increment: pointsToAward } }
+        })
+
+        // Notify team about progress
+        const { notifyUser } = await import('@/lib/activity')
+        const teamIds = new Set([
+          existingTask.createdById, 
+          ...existingTask.assignees.map((a: any) => a.id)
+        ])
+        
+        for (const targetId of Array.from(teamIds)) {
+          if (targetId === user.id) continue // Don't notify the one who completed it
+          await notifyUser({
+            userId: targetId,
+            title: 'Phase Accomplished! 🚀',
+            message: `${user.name || user.email} completed a phase in "${existingTask.title}" and earned ${pointsToAward} XP!`,
+            type: 'milestone_completed',
+            entityType: 'task',
+            entityId: existingTask.id
+          })
+        }
+      }
+    }
 
     // Notify new assignees
     if (assigneeIds && assigneeIds.length > 0) {

@@ -42,6 +42,10 @@ model User {
   notifications Notification[]
   tasksCreated Task[] @relation("TaskCreator")
   tasksAssigned Task[] @relation("TaskAssignees")
+  
+  points Int @default(0)
+  isPremium Boolean @default(false)
+  stripeCustomerId String?
 }
 
 model Workspace {
@@ -103,6 +107,7 @@ model Milestone {
   tags          String[]
   notes         String?
   attachments   String[] // Array of Supabase URLs
+  difficulty    String   @default("medium") // "easy" | "medium" | "hard" | "expert"
   
   taskId        Int
   task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)

@@ -97,6 +97,17 @@ export function WorkspaceCreateModal({ onClose, onSuccess }: WorkspaceCreateModa
       })
       const data = await res.json()
       console.log('Workspace creation response:', data)
+      
+      if (data.code === 'LIMIT_REACHED') {
+        toast.error(data.message, { duration: 5000 })
+        // Offer to redirect to pricing
+        const confirmUpgrade = window.confirm('Would you like to upgrade to Pro now to unlock unlimited workspaces?')
+        if (confirmUpgrade) {
+          window.location.href = '/pricing'
+        }
+        return
+      }
+
       if (data.error) throw new Error(data.error)
 
       // 2. Send Invites if any

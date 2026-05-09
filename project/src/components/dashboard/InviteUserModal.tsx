@@ -26,6 +26,11 @@ export function InviteUserModal({ workspaceSlug, workspaceName, onClose }: Invit
   const [department, setDepartment] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showDeptDropdown, setShowDeptDropdown] = useState(false)
+  const [showTitleDropdown, setShowTitleDropdown] = useState(false)
+
+  const departments = ['Engineering', 'Marketing', 'Sales', 'Product', 'HR', 'Design', 'Finance', 'Operations', 'Legal', 'Customer Success']
+  const jobTitles = ['Software Engineer', 'Senior Developer', 'Product Manager', 'Designer', 'Marketing Lead', 'Sales Executive', 'HR Manager', 'Data Analyst', 'Project Manager', 'QA Engineer', 'Lead Architect', 'VP of Product', 'CTO']
 
   const roles = [
     { id: 'member', label: 'Member', description: 'Can view and edit tasks' },
@@ -95,30 +100,76 @@ export function InviteUserModal({ workspaceSlug, workspaceName, onClose }: Invit
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2 relative">
               <label className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
                 <Building className="w-3 h-3" /> Department
               </label>
-              <input 
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder="Engineering"
-                className="w-full px-5 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-800/50 focus:border-emerald-500 outline-none transition-all font-bold text-sm"
-              />
+              <div className="relative">
+                <input 
+                  type="text"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  onFocus={() => setShowDeptDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDeptDropdown(false), 200)}
+                  placeholder="Select or enter custom..."
+                  className="w-full px-5 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-800/50 focus:border-emerald-500 outline-none transition-all font-bold text-sm"
+                />
+                {showDeptDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-2xl shadow-xl z-10 max-h-48 overflow-y-auto p-2 space-y-1">
+                    {departments.filter(d => d.toLowerCase().includes(department.toLowerCase())).map(dept => (
+                      <button
+                        key={dept}
+                        type="button"
+                        onClick={() => {
+                          setDepartment(dept)
+                          setShowDeptDropdown(false)
+                        }}
+                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-stone-50 dark:hover:bg-gray-800 text-sm font-bold text-stone-600 dark:text-gray-300 transition-colors"
+                      >
+                        {dept}
+                      </button>
+                    ))}
+                    {department && !departments.includes(department) && (
+                      <p className="px-4 py-2 text-[10px] font-black text-stone-400 uppercase">Custom Value</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
+
+            <div className="space-y-2 relative">
               <label className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
                 <Briefcase className="w-3 h-3" /> Job Title
               </label>
-              <input 
-                type="text"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="Senior Dev"
-                className="w-full px-5 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-800/50 focus:border-emerald-500 outline-none transition-all font-bold text-sm"
-              />
+              <div className="relative">
+                <input 
+                  type="text"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  onFocus={() => setShowTitleDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowTitleDropdown(false), 200)}
+                  placeholder="Select or enter custom..."
+                  className="w-full px-5 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-800/50 focus:border-emerald-500 outline-none transition-all font-bold text-sm"
+                />
+                {showTitleDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-2xl shadow-xl z-10 max-h-48 overflow-y-auto p-2 space-y-1">
+                    {jobTitles.filter(t => t.toLowerCase().includes(jobTitle.toLowerCase())).map(title => (
+                      <button
+                        key={title}
+                        type="button"
+                        onClick={() => {
+                          setJobTitle(title)
+                          setShowTitleDropdown(false)
+                        }}
+                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-stone-50 dark:hover:bg-gray-800 text-sm font-bold text-stone-600 dark:text-gray-300 transition-colors"
+                      >
+                        {title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

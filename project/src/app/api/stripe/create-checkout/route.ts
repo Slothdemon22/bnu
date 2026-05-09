@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { amount, currency = 'usd', productName = 'Product' } = body
+    const { amount, currency = 'usd', productName = 'Product', planType = 'pro' } = body
 
     if (!amount || amount <= 0) {
       return NextResponse.json(
@@ -35,19 +35,24 @@ export async function POST(request: NextRequest) {
             currency: currency,
             product_data: {
               name: productName,
+              description: `Subscription to ${productName}`,
             },
             unit_amount: Math.round(amount * 100), // Convert to cents
+            recurring: {
+              interval: 'month',
+            },
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      success_url: `${request.headers.get('origin') || 'http://localhost:3000'}/?stripe=success&session_id={CHECKOUT_SESSION_ID}#checkout`,
-      cancel_url: `${request.headers.get('origin') || 'http://localhost:3000'}/?stripe=cancel#checkout`,
+      mode: 'subscription',
+      success_url: `${request.headers.get('origin') || 'http://localhost:3000'}/workspaces?stripe=success`,
+      cancel_url: `${request.headers.get('origin') || 'http://localhost:3000'}/pricing`,
       customer_email: user.email,
       metadata: {
         userId: user.id.toString(),
         userEmail: user.email,
+        planType,
       },
     })
 

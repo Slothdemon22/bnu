@@ -21,7 +21,8 @@ import {
   Target,
   Mic,
   Square,
-  Sparkles
+  Sparkles,
+  Trophy
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
@@ -32,6 +33,8 @@ interface Member {
   name: string
   email: string
   imageUrl?: string | null
+  points?: number
+  jobTitle?: string | null
 }
 
 interface Milestone {
@@ -39,6 +42,7 @@ interface Milestone {
   description: string
   status: string
   estimatedTime: string
+  difficulty: string
   tags: string[]
   notes: string
   attachments: { name: string, url: string }[]
@@ -85,7 +89,7 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
   
   // Milestones
   const [milestones, setMilestones] = useState<Milestone[]>([
-    { name: 'Initial Setup', description: '', status: 'pending', estimatedTime: '', tags: [], notes: '', attachments: [] }
+    { name: 'Initial Setup', description: '', status: 'pending', estimatedTime: '', difficulty: 'medium', tags: [], notes: '', attachments: [] }
   ])
   
   const [attachments, setAttachments] = useState<{ name: string, url: string }[]>([])
@@ -122,6 +126,7 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
           description: m.description || '',
           status: m.status || 'pending',
           estimatedTime: m.estimatedTime || '',
+          difficulty: m.difficulty || 'medium',
           tags: m.tags || [],
           notes: m.notes || '',
           attachments: m.attachments || []
@@ -145,7 +150,9 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
           id: m.user.id,
           name: m.user.name || m.user.email.split('@')[0],
           email: m.user.email,
-          imageUrl: m.user.imageUrl
+          imageUrl: m.user.imageUrl,
+          points: m.user.points || 0,
+          jobTitle: m.jobTitle || 'Member'
         })))
       }
       if (data.workspace?.role) setWorkspaceRole(data.workspace.role)
@@ -225,7 +232,7 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
   }
 
   const addMilestone = () => {
-    setMilestones([...milestones, { name: '', description: '', status: 'pending', estimatedTime: '', tags: [], notes: '', attachments: [] }])
+    setMilestones([...milestones, { name: '', description: '', status: 'pending', estimatedTime: '', difficulty: 'medium', tags: [], notes: '', attachments: [] }])
   }
 
   const updateMilestone = (idx: number, field: keyof Milestone, value: any) => {
@@ -373,6 +380,7 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                   description: m.description || '',
                   status: 'pending',
                   estimatedTime: m.estimatedTime || '',
+                  difficulty: m.difficulty || 'medium',
                   tags: [],
                   notes: m.notes || '',
                   attachments: []
@@ -411,6 +419,43 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
      m.name.toLowerCase().includes(searchMember.toLowerCase()) || 
      m.email.toLowerCase().includes(searchMember.toLowerCase()))
   )
+  
+  const recommendMembers = () => {
+    if (members.length === 0) return
+    
+    // Determine target XP/Rank based on task priority or overall complexity
+    // Priority: urgent/high = needs more experienced people
+    const priorityWeight: Record<string, number> = { urgent: 4, high: 3, medium: 2, low: 1 }
+    const targetLevel = priorityWeight[priority] || 2
+    
+    // Sort members by a weighted score of points and seniority
+    const scoredMembers = members
+      .filter(m => !selectedMemberIds.includes(m.id))
+      .map(m => {
+        let score = (m.points || 0) / 100 // Points base score
+        
+        // Job title seniority boost (50% weightage)
+        const title = (m.jobTitle || '').toLowerCase()
+        if (title.includes('senior') || title.includes('lead') || title.includes('principal') || title.includes('expert')) {
+          score += 10 * targetLevel // Boost for senior roles on high priority tasks
+        } else if (title.includes('junior') || title.includes('intern')) {
+          score -= 5 // Penalty for junior roles on high priority tasks
+        }
+        
+        return { ...m, score }
+      })
+      .sort((a, b) => b.score - a.score)
+    
+    // Auto-select top 2-3 recommendations or just show them?
+    // Let's just pick the top 3 and add them
+    const recommended = scoredMembers.slice(0, 2).map(m => m.id)
+    if (recommended.length > 0) {
+      setSelectedMemberIds(prev => Array.from(new Set([...prev, ...recommended])))
+      toast.success(`Recommended ${recommended.length} experts based on task priority!`, { icon: '✨' })
+    } else {
+      toast.error('No suitable recommendations found.')
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md">
@@ -629,6 +674,12 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                       placeholder="Search members by name or email..."
                       className="w-full px-6 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-900 focus:border-emerald-500 outline-none transition-all font-bold"
                     />
+                    <button 
+                      onClick={recommendMembers}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-500/20 flex items-center gap-2 group transition-all"
+                    >
+                      <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" /> AI Recommend
+                    </button>
                     {showMemberDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-2xl shadow-xl z-10 max-h-60 overflow-y-auto overflow-x-hidden p-2">
                         {filteredMembers.length === 0 ? (
@@ -679,7 +730,9 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-black text-stone-900 dark:text-white truncate">{m.name}</p>
-                                <p className="text-[10px] font-bold text-stone-400 truncate">{m.email}</p>
+                                <p className="text-[10px] font-bold text-stone-400 truncate flex items-center gap-1.5">
+                                  {m.jobTitle} • <Trophy className="w-2.5 h-2.5 text-amber-500" /> {m.points} XP
+                                </p>
                               </div>
                             </div>
                             <button 
@@ -793,9 +846,21 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                           <div className="flex bg-white dark:bg-gray-950 rounded-xl p-1 border border-stone-200 dark:border-gray-800">
                             {['pending', 'in_progress', 'completed'].map(status => (
                               <button
-                                key={status}
-                                onClick={() => updateMilestone(idx, 'status', status)}
-                                className={`flex-1 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-lg transition-all ${m.status === status ? (status === 'completed' ? 'bg-emerald-500 text-white shadow-md' : status === 'in_progress' ? 'bg-blue-500 text-white shadow-md' : 'bg-stone-500 text-white shadow-md') : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-gray-800'}`}
+                                  key={status}
+                                onClick={() => {
+                                  // Prevent taking back a completed milestone
+                                  if (m.status === 'completed' && status !== 'completed') {
+                                    toast.error('Mission accomplished! Completed phases cannot be regressed.')
+                                    return
+                                  }
+                                  updateMilestone(idx, 'status', status)
+                                }}
+                                disabled={m.status === 'completed' && status !== 'completed'}
+                                className={`flex-1 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-lg transition-all ${
+                                  m.status === status 
+                                    ? (status === 'completed' ? 'bg-emerald-500 text-white shadow-md' : status === 'in_progress' ? 'bg-blue-500 text-white shadow-md' : 'bg-stone-500 text-white shadow-md') 
+                                    : (m.status === 'completed' ? 'text-stone-300 cursor-not-allowed' : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-gray-800')
+                                }`}
                               >
                                 {status.replace('_', ' ')}
                               </button>
@@ -803,15 +868,30 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Est. Time</label>
+                          <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Est. Completion Date</label>
                           <div className="relative">
                             <input 
+                              type="date"
+                              min={new Date().toISOString().split('T')[0]}
                               value={m.estimatedTime}
                               onChange={(e) => updateMilestone(idx, 'estimatedTime', e.target.value)}
-                              placeholder="2 days, 10 hrs..."
                               className="w-full px-5 py-3 rounded-xl border border-stone-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:border-emerald-500 outline-none transition-all font-bold"
                             />
-                            <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
+                            <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300 pointer-events-none" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Difficulty</label>
+                          <div className="flex bg-white dark:bg-gray-950 rounded-xl p-1 border border-stone-200 dark:border-gray-800">
+                            {['easy', 'medium', 'hard', 'expert'].map(diff => (
+                              <button
+                                key={diff}
+                                onClick={() => updateMilestone(idx, 'difficulty', diff)}
+                                className={`flex-1 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-lg transition-all ${m.difficulty === diff ? 'bg-emerald-500 text-white shadow-md' : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-gray-800'}`}
+                              >
+                                {diff}
+                              </button>
+                            ))}
                           </div>
                         </div>
                         <div className="space-y-2">

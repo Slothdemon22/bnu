@@ -20,7 +20,9 @@ import {
   Target,
   UserPlus,
   FileText,
-  Sparkles
+  Sparkles,
+  Crown,
+  Zap
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -195,6 +197,27 @@ export function WorkspaceSidebar() {
                 </Link>
               )
             })}
+          </div>
+        )}
+
+        {!isCollapsed && !user?.isPremium && (
+          <div className="mx-2 mt-8 p-5 rounded-[2rem] bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <Crown className="w-12 h-12" />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Pro Feature</span>
+              </div>
+              <p className="text-xs font-black mb-4 leading-tight">Unlimited Workspaces & Advanced AI Commands.</p>
+              <Link 
+                href="/pricing"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white hover:bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20"
+              >
+                Go Pro <Zap className="w-3 h-3 fill-current" />
+              </Link>
+            </div>
           </div>
         )}
       </nav>

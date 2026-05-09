@@ -163,18 +163,16 @@ export default function WorkspaceTasksPage() {
           </h1>
           <p className="text-stone-500 font-medium font-mono text-sm uppercase opacity-60 mt-1">Control Center / Tasks</p>
         </div>
-        {isAdmin && (
-          <button 
-            onClick={() => {
-              setSelectedTask(null)
-              setShowModal(true)
-            }}
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-[2rem] font-black shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all group shrink-0"
-          >
-            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-            NEW MISSION
-          </button>
-        )}
+        <button 
+          onClick={() => {
+            setSelectedTask(null)
+            setShowModal(true)
+          }}
+          className="flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-[2rem] font-black shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all group shrink-0"
+        >
+          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          NEW MISSION
+        </button>
       </div>
 
       {/* Controls */}

@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Trophy, Mail, Shield, Settings, Bell, User as UserIcon, LogOut, ChevronLeft, Target, Award, Star } from 'lucide-react'
 import Navbar from '@/components/custom/Navbar'
 import Footer from '@/components/custom/Footer'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/ToasterProvider'
 
-type User = { id: number; email: string; name: string | null; role: string; imageUrl?: string | null }
+type User = { id: number; email: string; name: string | null; role: string; imageUrl?: string | null; points: number }
 
 type NotificationItem = {
   id: number
@@ -226,9 +227,18 @@ export default function ProfilePage() {
                 {displayName}
               </h1>
               <p className="text-stone-500 dark:text-gray-400 mt-1">{user.email}</p>
-              <span className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 capitalize">
-                {user.role}
-              </span>
+              <div className="flex flex-wrap items-center gap-3 mt-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                  <Shield className="w-3 h-3" />
+                  {user.role}
+                </span>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20 border border-amber-400/30">
+                  <Trophy className="w-4 h-4" />
+                  <span className="text-[11px] font-black uppercase tracking-tighter">
+                    {user.points.toLocaleString()} XP RANK
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -329,6 +339,12 @@ export default function ProfilePage() {
                       <dt className="text-stone-500 dark:text-gray-400">Email</dt>
                       <dd className="font-medium text-stone-900 dark:text-white mt-0.5 truncate">
                         {user.email}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-stone-500 dark:text-gray-400">Total Points</dt>
+                      <dd className="font-black text-amber-600 dark:text-amber-400 mt-0.5 text-lg">
+                        {user.points} XP
                       </dd>
                     </div>
                   </dl>

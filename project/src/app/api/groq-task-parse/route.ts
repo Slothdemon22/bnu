@@ -13,7 +13,9 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.API_KEY || ''
 
+    const currentDate = new Date().toISOString().split('T')[0]
     const systemPrompt = `You are an AI that extracts task information from raw voice transcripts.
+Today is ${currentDate}.
 Output ONLY a valid JSON object matching this schema. If a value is not mentioned, omit it or use default. Do not include markdown code block syntax like \`\`\`json.
 {
   "title": string,
@@ -25,11 +27,15 @@ Output ONLY a valid JSON object matching this schema. If a value is not mentione
     {
       "name": string,
       "description": string,
-      "estimatedTime": string,
+      "estimatedTime": string (YYYY-MM-DD),
+      "difficulty": "easy" | "medium" | "hard" | "expert",
       "notes": string
     }
   ]
-}`
+}
+Note: 
+1. Assign "difficulty" based on the complexity of the milestone. 
+2. Determine a reasonable "estimatedTime" (completion date) for each milestone based on today's date (${currentDate}) and the difficulty. For example, easy milestones might be due in 1-2 days, expert ones in 1-2 weeks. Ensure they are sequential and before the task "dueDate".`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

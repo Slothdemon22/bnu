@@ -15,15 +15,19 @@ export async function GET(
       where: { slug },
       include: {
         members: {
-          include: {
+          select: {
             user: {
               select: {
                 id: true,
                 name: true,
                 email: true,
-                imageUrl: true
+                imageUrl: true,
+                points: true
               }
-            }
+            },
+            jobTitle: true,
+            role: true,
+            id: true
           }
         },
         invites: {

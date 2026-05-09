@@ -15,7 +15,10 @@ import {
   ChevronRight,
   Plus,
   Search,
-  Bell
+  Bell,
+  Crown,
+  Zap,
+  Star
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -119,6 +122,22 @@ export function DashboardSidebar() {
             )
           })}
         </div>
+
+        {!isCollapsed && !user?.isPremium && (
+          <div className="mx-2 mt-6 p-4 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-800 text-white shadow-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-emerald-500 fill-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Go Premium</span>
+            </div>
+            <p className="text-xs font-bold mb-3 leading-tight">Unlock unlimited workspaces and AI power.</p>
+            <Link 
+              href="/pricing"
+              className="block w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-center rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+              Upgrade Now
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* User Footer */}
@@ -136,7 +155,14 @@ export function DashboardSidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-stone-900 dark:text-white truncate">{user?.name || 'User'}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-stone-900 dark:text-white truncate">{user?.name || 'User'}</p>
+                {user?.isPremium ? (
+                  <Crown className="w-3.5 h-3.5 text-emerald-500" title="Premium User" />
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-gray-800 text-stone-500 text-[8px] font-black uppercase tracking-widest border border-stone-200 dark:border-gray-700">Free</span>
+                )}
+              </div>
               <p className="text-xs text-stone-500 truncate">{user?.email}</p>
             </div>
           )}

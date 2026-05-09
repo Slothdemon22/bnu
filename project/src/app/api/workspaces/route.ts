@@ -79,6 +79,24 @@ export async function POST(req: NextRequest) {
   const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '') + '-' + Math.random().toString(36).substring(2, 5)
 
   try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { isPremium: true }
+    })
+
+    if (!dbUser?.isPremium) {
+      const workspaceCount = await prisma.workspaceMember.count({
+        where: { userId: user.id, role: 'owner' }
+      })
+      if (workspaceCount >= 3) {
+        return NextResponse.json({ 
+          error: 'Workspace limit reached', 
+          code: 'LIMIT_REACHED',
+          message: 'Free users can only create up to 3 workspaces. Please upgrade to Pro for unlimited workspaces.'
+        }, { status: 403 })
+      }
+    }
+
     const workspace = await prisma.workspace.create({
       data: {
         name,

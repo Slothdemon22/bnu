@@ -51,6 +51,7 @@ export async function POST(
             description: m.description,
             status: m.status || 'pending',
             estimatedTime: m.estimatedTime,
+            difficulty: m.difficulty || 'medium',
             tags: m.tags || [],
             notes: m.notes,
             attachments: m.attachments || []
