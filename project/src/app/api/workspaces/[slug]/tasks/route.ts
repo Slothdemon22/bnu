@@ -27,7 +27,13 @@ export async function POST(
       tags, 
       assigneeIds, 
       milestones,
-      attachments 
+      attachments,
+      isRecurring,
+      recurringPattern,
+      recurringInterval,
+      recurringDays,
+      recurringDueTime,
+      recurrenceEndDate,
     } = body
 
     if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -40,6 +46,12 @@ export async function POST(
         dueDate: dueDate ? new Date(dueDate) : null,
         tags: tags || [],
         attachments: attachments || [],
+        isRecurring: !!isRecurring,
+        recurringPattern: isRecurring ? recurringPattern || null : null,
+        recurringInterval: isRecurring ? Math.max(1, Number(recurringInterval || 1)) : 1,
+        recurringDays: isRecurring && Array.isArray(recurringDays) ? recurringDays : [],
+        recurringDueTime: isRecurring ? recurringDueTime || null : null,
+        recurrenceEndDate: isRecurring && recurrenceEndDate ? new Date(recurrenceEndDate) : null,
         workspaceId: workspace.id,
         createdById: user.id,
         assignees: {

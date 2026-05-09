@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+async function safeQuery<T>(query: Promise<T>, fallback: T, label: string): Promise<T> {
+  try {
+    return await query
+  } catch (error) {
+    console.error(`[AI_CHAT] ${label} query failed:`, error)
+    return fallback
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -22,25 +31,46 @@ export async function POST(
 
     if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
 
-    // Always fetch all workspace tasks and members for total context mastery
-    const allWorkspaceTasks = await prisma.task.findMany({
-      where: { workspaceId: workspace.id },
-      include: { 
-        assignees: { select: { name: true, email: true } }, 
-        createdBy: { select: { name: true } },
-        milestones: true
-      }
-    })
-
-    const allMembers = await prisma.workspaceMember.findMany({
-      where: { workspaceId: workspace.id },
-      include: { user: { select: { name: true, email: true } } }
-    })
-
-    const recentGlobalActivity = await prisma.activityLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    }).catch(() => [])
+    // Fetch context with safe fallbacks (prevents ETIMEDOUT from breaking chat)
+    const [allWorkspaceTasks, allMembers, recentGlobalActivity] = await Promise.all([
+      safeQuery(
+        prisma.task.findMany({
+          where: { workspaceId: workspace.id },
+          orderBy: { updatedAt: 'desc' },
+          take: 150,
+          include: {
+            assignees: { select: { name: true, email: true, id: true } },
+            createdBy: { select: { name: true } },
+            milestones: {
+              select: {
+                name: true,
+                status: true,
+                estimatedTime: true,
+                description: true,
+              }
+            }
+          }
+        }),
+        [],
+        'workspace-tasks'
+      ),
+      safeQuery(
+        prisma.workspaceMember.findMany({
+          where: { workspaceId: workspace.id },
+          include: { user: { select: { id: true, name: true, email: true } } }
+        }),
+        [],
+        'workspace-members'
+      ),
+      safeQuery(
+        prisma.activityLog.findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }),
+        [],
+        'global-activity'
+      )
+    ])
 
     let baseContext = `\n### Comprehensive Workspace State:\n`
     baseContext += `**Members**:\n`
@@ -82,10 +112,14 @@ export async function POST(
     let contextText = baseContext
 
     if (taskIds.length > 0) {
-      const tasks = await prisma.task.findMany({
-        where: { id: { in: taskIds }, workspaceId: workspace.id },
-        include: { assignees: true }
-      })
+      const tasks = await safeQuery(
+        prisma.task.findMany({
+          where: { id: { in: taskIds }, workspaceId: workspace.id },
+          include: { assignees: true }
+        }),
+        [],
+        'mentioned-tasks'
+      )
       if (tasks.length > 0) {
         contextText += `\n\n### Task Context (User explicitly mentioned these tasks):\n`
         tasks.forEach(t => {
@@ -95,19 +129,29 @@ export async function POST(
     }
 
     if (memberIds.length > 0) {
-      const members = await prisma.workspaceMember.findMany({
-        where: { id: { in: memberIds }, workspaceId: workspace.id },
-        include: { user: true }
-      })
+      const members = await safeQuery(
+        prisma.workspaceMember.findMany({
+          where: { id: { in: memberIds }, workspaceId: workspace.id },
+          include: { user: true }
+        }),
+        [],
+        'mentioned-members'
+      )
       if (members.length > 0) {
         contextText += `\n\n### Member Context (User explicitly mentioned these members):\n`
         for (const m of members) {
           contextText += `- Member: ${m.user.name || m.user.email} (Role: ${m.role})\n`
           
-          const memberTasks = await prisma.task.findMany({
-            where: { workspaceId: workspace.id, assignees: { some: { id: m.user.id } } },
-            select: { title: true, status: true, updatedAt: true }
-          })
+          const memberTasks = await safeQuery(
+            prisma.task.findMany({
+              where: { workspaceId: workspace.id, assignees: { some: { id: m.user.id } } },
+              select: { title: true, status: true, updatedAt: true },
+              take: 25,
+              orderBy: { updatedAt: 'desc' },
+            }),
+            [],
+            `member-tasks-${m.user.id}`
+          )
           if (memberTasks.length > 0) {
             contextText += `  - Assigned Tasks:\n`
             memberTasks.forEach(t => {
@@ -115,11 +159,15 @@ export async function POST(
             })
           }
 
-          const recentActivity = await prisma.activityLog.findMany({
-            where: { userId: m.user.id },
-            orderBy: { createdAt: 'desc' },
-            take: 5
-          })
+          const recentActivity = await safeQuery(
+            prisma.activityLog.findMany({
+              where: { userId: m.user.id },
+              orderBy: { createdAt: 'desc' },
+              take: 5
+            }),
+            [],
+            `member-activity-${m.user.id}`
+          )
           if (recentActivity.length > 0) {
             contextText += `  - Recent Activity History:\n`
             recentActivity.forEach(a => {

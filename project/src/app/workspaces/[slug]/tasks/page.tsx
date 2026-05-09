@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { TaskCreateModal } from '@/components/tasks/TaskCreateModal'
 import toast from 'react-hot-toast'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function WorkspaceTasksPage() {
   const params = useParams()
@@ -35,6 +36,7 @@ export default function WorkspaceTasksPage() {
   const [initialModalStep, setInitialModalStep] = useState(1)
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'board'>('board')
   const [searchQuery, setSearchQuery] = useState('')
+  const [automationFeed, setAutomationFeed] = useState<{ id: number; title: string } | null>(null)
 
   const handleDragStart = (e: React.DragEvent, taskId: number) => {
     e.dataTransfer.setData('taskId', taskId.toString())
@@ -56,6 +58,15 @@ export default function WorkspaceTasksPage() {
         body: JSON.stringify({ status: newStatus })
       })
       if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      if (data.task) {
+        setTasks(prev => prev.map(t => t.id === data.task.id ? data.task : t))
+      }
+      if (data.recurringGeneratedTask) {
+        setTasks(prev => [data.recurringGeneratedTask, ...prev])
+        setAutomationFeed({ id: data.recurringGeneratedTask.id, title: data.recurringGeneratedTask.title })
+        toast.success(`AI regenerated recurring task: ${data.recurringGeneratedTask.title}`)
+      }
     } catch (err) {
       toast.error('Failed to update task status')
       setTasks(originalTasks)
@@ -70,6 +81,12 @@ export default function WorkspaceTasksPage() {
     fetchWorkspace()
     fetchTasks()
   }, [slug])
+
+  useEffect(() => {
+    if (!automationFeed) return
+    const timer = setTimeout(() => setAutomationFeed(null), 4500)
+    return () => clearTimeout(timer)
+  }, [automationFeed])
 
   const fetchWorkspace = async () => {
     try {
@@ -155,6 +172,32 @@ export default function WorkspaceTasksPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-8 pb-20">
+      <AnimatePresence>
+        {automationFeed && (
+          <motion.div
+            initial={{ opacity: 0, y: -24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.25 }}
+            className="fixed right-6 top-24 z-50 rounded-2xl border border-emerald-300/50 bg-emerald-500/10 px-4 py-3 shadow-2xl shadow-emerald-500/20 backdrop-blur-md"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">AI Automation</p>
+                <p className="text-sm font-bold text-stone-900 dark:text-white">Recurring task regenerated: {automationFeed.title}</p>
+              </div>
+              <button
+                onClick={() => setAutomationFeed(null)}
+                className="rounded-lg p-1 text-stone-500 hover:bg-white/60"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -259,6 +302,12 @@ export default function WorkspaceTasksPage() {
                     
                     <h4 className="font-black text-stone-900 dark:text-white leading-tight mb-2 uppercase tracking-tight group-hover:text-emerald-500 transition-colors flex items-center gap-2 flex-wrap">
                       {task.title}
+                      {task.isRecurring && (
+                        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-emerald-600 shadow-lg shadow-emerald-500/10">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                          Recurring
+                        </div>
+                      )}
                       {task.roomId && (
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500 text-white rounded-lg shadow-lg shadow-emerald-500/30 shrink-0 animate-pulse">
                           <Video className="w-3.5 h-3.5" />
@@ -366,6 +415,12 @@ export default function WorkspaceTasksPage() {
 
                 <h3 className="text-xl font-black text-stone-900 dark:text-white uppercase tracking-tighter leading-none mb-3 group-hover:text-emerald-500 transition-colors flex items-center gap-2 flex-wrap">
                   {task.title}
+                  {task.isRecurring && (
+                    <div className="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-emerald-600 shadow-lg shadow-emerald-500/10">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                      Recurring
+                    </div>
+                  )}
                   {task.roomId && (
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500 text-white rounded-lg shadow-lg shadow-emerald-500/30 shrink-0 animate-pulse">
                       <Video className="w-4 h-4" />
@@ -417,6 +472,12 @@ export default function WorkspaceTasksPage() {
                 <div className="min-w-0">
                   <h3 className="font-black text-stone-900 dark:text-white uppercase tracking-tight truncate flex items-center gap-2">
                     {task.title}
+                    {task.isRecurring && (
+                      <div className="flex items-center gap-1.5 rounded-md border border-emerald-400/40 bg-emerald-500/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-emerald-600 shadow-lg shadow-emerald-500/10">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                        Recurring
+                      </div>
+                    )}
                     {task.roomId && (
                       <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500 text-white rounded-md shadow-md shadow-emerald-500/30 shrink-0 animate-pulse">
                         <Video className="w-3 h-3" />

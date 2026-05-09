@@ -146,9 +146,9 @@ function ContactUs() {
         {/* Header */}
         <SectionHeading
           ref={headingRef}
-          badge="Contact Us"
-          heading="Get in Touch"
-          description="Contact Ionio to discuss your AI transformation needs."
+          badge="Let’s Build Momentum"
+          heading="Talk With Our Team"
+          description="Share your goals and we will help you design an AI productivity setup that fits your workflow."
           size="md"
           align="center"
           as="h2"

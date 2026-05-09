@@ -164,9 +164,9 @@ const CaseStudies: React.FC = () => {
         {/* Header */}
         <SectionHeading
           ref={headingRef}
-          badge="Designs That Drive Growth"
-          heading="Recent case studies"
-          description="Explore our latest projects featuring AI-powered platforms, business solutions, and innovative designs that have driven measurable growth for our clients."
+          badge="Product In Action"
+          heading="Real workflow outcomes"
+          description="See how teams use Momentum to plan projects, automate repetitive tasks, and ship work with more consistency."
           size="md"
           align="center"
           as="h2"

@@ -140,8 +140,14 @@ export function AIBubble() {
     if (!('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 1
-    utterance.pitch = 1
+    const voices = window.speechSynthesis.getVoices()
+    const preferredVoice =
+      voices.find((v) => /en-US|en_US/i.test(v.lang) && /Google|Samantha|Daniel|Serena/i.test(v.name)) ||
+      voices.find((v) => /en-US|en_US/i.test(v.lang)) ||
+      voices[0]
+    if (preferredVoice) utterance.voice = preferredVoice
+    utterance.rate = 0.96
+    utterance.pitch = 1.02
     window.speechSynthesis.speak(utterance)
   }
 
@@ -149,6 +155,11 @@ export function AIBubble() {
     // Strip markdown formatting for cleaner speech
     const cleanText = text.replace(/[*_#`]/g, '')
     if (!cleanText.trim()) return
+    // Groq TTS currently rejects very large inputs; use local speech fallback.
+    if (cleanText.length > 3800) {
+      speakWithBrowserTTS(cleanText)
+      return
+    }
     
     try {
       if (currentAudioRef.current) {
@@ -189,7 +200,9 @@ export function AIBubble() {
       } else {
         // Fallback to browser TTS if Groq TTS endpoint throws error
         const err = await res.json().catch(() => ({}))
-        console.warn('Groq TTS request failed, using browser TTS fallback:', err.error || 'Unknown error')
+        if (err.code !== 'model_terms_required') {
+          console.warn('Groq TTS request failed, using browser TTS fallback:', err.error || 'Unknown error')
+        }
         speakWithBrowserTTS(cleanText)
       }
     } catch (err) {

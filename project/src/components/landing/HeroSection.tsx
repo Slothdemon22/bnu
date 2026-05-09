@@ -1,39 +1,121 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, Play, CheckCircle2, Calendar, Loader2, Terminal, Activity } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRight,
+  Play,
+  CheckCircle2,
+  Calendar,
+  Terminal,
+  Activity,
+  Users,
+  Wand2,
+  RotateCcw,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
-  const [demoState, setDemoState] = useState<"idle" | "typing" | "analyzing" | "generating" | "complete">("idle");
+  type DemoState = "idle" | "analyzing" | "planning" | "generating" | "complete";
+  const timeoutsRef = useRef<number[]>([]);
+  const presets = useMemo(
+    () => [
+      {
+        id: "startup",
+        label: "Founder Sprint",
+        prompt:
+          "Prepare investor update, finalize landing page copy, and schedule product review tomorrow at 10am.",
+        summary: "2 meetings auto-scheduled · 3 tasks prioritized · 1 focus block generated",
+        tasks: [
+          { title: "Created Task: Investor Update Deck", icon: Terminal },
+          { title: "Scheduled Product Review Meeting", icon: Calendar },
+          { title: "Assigned Copy Review to Content Team", icon: Users },
+          { title: "Generated 90-minute Focus Session", icon: Sparkles },
+        ],
+      },
+      {
+        id: "student",
+        label: "Student Mode",
+        prompt:
+          "Finish DSA assignment by Friday, revise OS notes, and plan mock interview with mentor.",
+        summary: "Revision slots balanced · deadlines sorted · mock prep auto-planned",
+        tasks: [
+          { title: "Created Task: DSA Assignment", icon: Terminal },
+          { title: "Planned OS Revision Session", icon: Activity },
+          { title: "Scheduled Mock Interview", icon: Calendar },
+          { title: "Generated Exam Focus Timeline", icon: Sparkles },
+        ],
+      },
+      {
+        id: "team",
+        label: "Team Ops",
+        prompt:
+          "Run weekly sprint review, assign QA checklist, and generate recurring standup tasks for next week.",
+        summary: "Recurring workflow created · QA owners assigned · sprint sync ready",
+        tasks: [
+          { title: "Created Task: Sprint Review Agenda", icon: Terminal },
+          { title: "Auto-assigned QA Checklist", icon: Users },
+          { title: "Scheduled Weekly Sprint Review", icon: Calendar },
+          { title: "Regenerated Recurring Standup Tasks", icon: Sparkles },
+        ],
+      },
+    ],
+    []
+  );
+
+  const [selectedPreset, setSelectedPreset] = useState(0);
+  const [demoInput, setDemoInput] = useState(presets[0].prompt);
+  const [demoState, setDemoState] = useState<DemoState>("idle");
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    setDemoInput(presets[selectedPreset].prompt);
+  }, [selectedPreset, presets]);
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((t) => window.clearTimeout(t));
+    };
+  }, []);
+
+  const clearDemoTimers = () => {
+    timeoutsRef.current.forEach((t) => window.clearTimeout(t));
+    timeoutsRef.current = [];
+  };
 
   const handleOptimizeClick = () => {
     if (demoState !== "idle") return;
-    
+
+    clearDemoTimers();
     setDemoState("analyzing");
-    
-    // Simulate AI pipeline
-    setTimeout(() => {
+    setProgress(28);
+
+    const t1 = window.setTimeout(() => {
+      setDemoState("planning");
+      setProgress(58);
+    }, 900);
+
+    const t2 = window.setTimeout(() => {
       setDemoState("generating");
-      
-      setTimeout(() => {
-        setDemoState("complete");
-      }, 2500);
-    }, 1500);
+      setProgress(82);
+    }, 1800);
+
+    const t3 = window.setTimeout(() => {
+      setDemoState("complete");
+      setProgress(100);
+    }, 3200);
+
+    timeoutsRef.current = [t1, t2, t3];
   };
 
   const resetDemo = () => {
+    clearDemoTimers();
     setDemoState("idle");
+    setProgress(0);
   };
-
-  const tasks = [
-    { title: "Created Task: DSA Assignment", icon: Terminal },
-    { title: "Scheduled Investor Meeting", icon: Calendar },
-    { title: "Assigned High Priority", icon: Activity },
-    { title: "Generated Focus Session", icon: Sparkles }
-  ];
+  const activePreset = presets[selectedPreset];
 
   return (
     <div className="relative min-h-[90vh] flex items-center w-full justify-center overflow-hidden bg-background py-20">
@@ -85,13 +167,16 @@ export default function HeroSection() {
                 size="lg" 
                 variant="outline" 
                 className="h-14 px-8 text-base border-border text-foreground hover:bg-muted rounded-xl font-medium transition-all"
+                asChild
               >
-                <Play className="mr-2 w-5 h-5" />
-                Watch Demo
+                <Link href="#process-heading">
+                  <Play className="mr-2 w-5 h-5" />
+                  See How It Works
+                </Link>
               </Button>
             </div>
             
-            <div className="flex items-center gap-6 pt-4 lg:pt-8 text-sm text-label">
+            <div className="flex flex-wrap items-center gap-4 pt-4 lg:pt-8 text-sm text-label">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--accent-strong)' }} />
                 <span>No credit card required</span>
@@ -99,6 +184,10 @@ export default function HeroSection() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--accent-strong)' }} />
                 <span>14-day free trial</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--accent-strong)' }} />
+                <span>Realtime AI automation</span>
               </div>
             </div>
           </motion.div>
@@ -133,11 +222,34 @@ export default function HeroSection() {
                 {/* Initial Input state */}
                 <div className="relative">
                   <div className={`p-4 rounded-xl border transition-all duration-500 ${demoState !== "idle" ? "shadow-md" : "border-border"}`} style={{ backgroundColor: 'var(--surface)', borderColor: demoState !== "idle" ? 'var(--accent-strong)' : '' }}>
-                    <p className="text-foreground pr-8 text-sm sm:text-base">
-                      Finish DSA assignment by Friday and prepare for investor meeting tomorrow
-                      {demoState === "idle" && <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="inline-block w-[2px] h-4 ml-1 align-middle" style={{ backgroundColor: 'var(--accent-strong)' }} />}
-                    </p>
+                    <textarea
+                      value={demoInput}
+                      onChange={(e) => setDemoInput(e.target.value)}
+                      disabled={demoState !== "idle"}
+                      rows={3}
+                      className="w-full resize-none bg-transparent text-foreground pr-8 text-sm sm:text-base outline-none placeholder:text-muted-foreground disabled:opacity-80"
+                      placeholder="Describe your day and let Momenta plan it..."
+                    />
                   </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {presets.map((preset, idx) => (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        if (demoState === "idle") setSelectedPreset(idx);
+                      }}
+                      disabled={demoState !== "idle"}
+                      className={`rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
+                        selectedPreset === idx
+                          ? "border-emerald-500 bg-emerald-500/10 text-emerald-600"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground"
+                      } disabled:opacity-60`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Processing States */}
@@ -155,7 +267,20 @@ export default function HeroSection() {
                         <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent-strong)' }} />
                         <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent-strong)' }} />
                       </div>
-                      Analyzing workflow...
+                      Understanding your context...
+                    </motion.div>
+                  )}
+
+                  {demoState === "planning" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-3 font-medium ml-2 text-sm sm:text-base"
+                      style={{ color: "var(--accent-strong)" }}
+                    >
+                      <Wand2 className="h-4 w-4 animate-pulse" />
+                      Building an optimal execution plan...
                     </motion.div>
                   )}
 
@@ -165,7 +290,7 @@ export default function HeroSection() {
                       animate={{ opacity: 1 }}
                       className="flex flex-col gap-2 sm:gap-3"
                     >
-                      {tasks.map((task, i) => (
+                      {activePreset.tasks.map((task, i) => (
                         <motion.div 
                           key={i}
                           initial={{ opacity: 0, x: -20 }}
@@ -215,47 +340,47 @@ export default function HeroSection() {
                       
                       <p className="font-medium relative z-10 flex items-start sm:items-center gap-2 text-xs sm:text-sm text-foreground">
                         <Sparkles className="w-4 h-4 mt-0.5 sm:mt-0 shrink-0" style={{ color: 'var(--accent-strong)' }} />
-                        Your schedule has been optimized for maximum productivity.
+                        {activePreset.summary}
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-                
-                {/* Reset button - hidden overlay to restart demo easily */}
-                {demoState === "complete" && (
-                  <button 
-                    onClick={resetDemo}
-                    className="absolute inset-0 z-50 cursor-default"
-                    aria-label="Reset demo"
-                  />
-                )}
               </div>
 
               {/* Bottom Action Area */}
               <div className="p-4 border-t border-border relative z-20" style={{ backgroundColor: 'var(--surface)' }}>
+                <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: "var(--accent-strong)" }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                  />
+                </div>
                 <Button 
-                  onClick={handleOptimizeClick}
-                  disabled={demoState !== "idle"}
+                  onClick={demoState === "complete" ? resetDemo : handleOptimizeClick}
+                  disabled={demoState !== "idle" && demoState !== "complete"}
                   className={`w-full h-12 text-md font-medium transition-all duration-300 rounded-xl
                     ${demoState === "idle" 
                       ? "text-white shadow-lg hover:shadow-xl hover:opacity-90" 
                       : "bg-muted text-muted-foreground border border-border"}`}
-                  style={demoState === "idle" ? { backgroundColor: 'var(--accent-strong)' } : {}}
+                  style={demoState === "idle" ? { backgroundColor: 'var(--accent-strong)' } : demoState === "complete" ? { backgroundColor: 'var(--surface)' } : {}}
                 >
                   {demoState === "idle" ? (
                     <span className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5" />
-                      Optimize My Day
+                      Run Live Demo
                     </span>
-                  ) : demoState === "analyzing" || demoState === "generating" ? (
+                  ) : demoState === "analyzing" || demoState === "planning" || demoState === "generating" ? (
                     <span className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full border-2 border-foreground/30 border-t-foreground animate-spin" />
-                      Working...
+                      Working in real-time...
                     </span>
                   ) : (
                     <span className="flex items-center gap-2" style={{ color: 'var(--accent-strong)' }}>
-                      <CheckCircle2 className="w-5 h-5" />
-                      Optimized
+                      <RotateCcw className="w-5 h-5" />
+                      Replay Scenario
                     </span>
                   )}
                 </Button>

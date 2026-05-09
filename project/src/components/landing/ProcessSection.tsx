@@ -191,8 +191,8 @@ const ProcessCards: React.FC = () => {
       <SectionHeading
         ref={headingRef}
         badge="Our Proven Process"
-        heading="How We Bring Ideas to Life"
-        description="Explore our latest projects featuring AI-powered platforms, business solutions, and innovative designs that have driven measurable growth for our clients."
+        heading="How Teams Move Faster"
+        description="From onboarding to AI execution, Momentum turns daily operations into a focused, automated workflow."
         size="md"
         align="center"
         as="h2"

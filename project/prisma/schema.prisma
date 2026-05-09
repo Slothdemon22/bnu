@@ -77,6 +77,15 @@ model Task {
   dueDate     DateTime?
   tags        String[]
   attachments String[] // Array of Supabase URLs
+  isRecurring       Boolean  @default(false)
+  recurringPattern  String?  // "daily" | "weekly" | "monthly"
+  recurringInterval Int      @default(1)
+  recurringDays     Int[]    // 0-6 for Sun-Sat
+  recurringDueTime  String?  // HH:mm
+  recurrenceEndDate DateTime?
+  parentTaskId      Int?
+  parentTask        Task?    @relation("TaskRecurrenceChain", fields: [parentTaskId], references: [id])
+  recurringChildren Task[]   @relation("TaskRecurrenceChain")
   
   // Meeting Integration
   roomId      String?   // 100ms room ID
@@ -98,6 +107,7 @@ model Task {
   updatedAt   DateTime  @updatedAt
 
   @@index([workspaceId])
+  @@index([parentTaskId])
 }
 
 model Milestone {

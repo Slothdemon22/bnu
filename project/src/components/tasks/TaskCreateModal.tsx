@@ -22,7 +22,8 @@ import {
   Mic,
   Square,
   Sparkles,
-  Trophy
+  Trophy,
+  Repeat
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
@@ -75,6 +76,12 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('medium')
   const [dueDate, setDueDate] = useState('')
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurringPattern, setRecurringPattern] = useState<'daily' | 'weekly' | 'monthly'>('daily')
+  const [recurringInterval, setRecurringInterval] = useState(1)
+  const [recurringDays, setRecurringDays] = useState<number[]>([])
+  const [recurringDueTime, setRecurringDueTime] = useState('')
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('')
   
   // Assignees
   const [members, setMembers] = useState<Member[]>([])
@@ -118,6 +125,12 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
       setDescription(task.description || '')
       setPriority(task.priority || 'medium')
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '')
+      setIsRecurring(!!task.isRecurring)
+      setRecurringPattern((task.recurringPattern as 'daily' | 'weekly' | 'monthly') || 'daily')
+      setRecurringInterval(task.recurringInterval || 1)
+      setRecurringDays(task.recurringDays || [])
+      setRecurringDueTime(task.recurringDueTime || '')
+      setRecurrenceEndDate(task.recurrenceEndDate ? new Date(task.recurrenceEndDate).toISOString().split('T')[0] : '')
       setTags(task.tags || [])
       setSelectedMemberIds(task.assignees?.map((a: any) => a.id) || task.assigneeIds || [])
       if (task.milestones && task.milestones.length > 0) {
@@ -268,7 +281,13 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
           tags,
           assigneeIds: selectedMemberIds,
           milestones,
-          attachments: attachments.map(a => a.url)
+          attachments: attachments.map(a => a.url),
+          isRecurring,
+          recurringPattern: isRecurring ? recurringPattern : null,
+          recurringInterval: isRecurring ? Math.max(1, Number(recurringInterval || 1)) : 1,
+          recurringDays: isRecurring && recurringPattern === 'weekly' ? recurringDays : [],
+          recurringDueTime: isRecurring && recurringDueTime ? recurringDueTime : null,
+          recurrenceEndDate: isRecurring && recurrenceEndDate ? recurrenceEndDate : null
         })
       })
       
@@ -588,6 +607,90 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
                       onChange={(e) => setDueDate(e.target.value)}
                       className="w-full px-6 py-4 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-900 focus:border-emerald-500 outline-none transition-all font-bold"
                     />
+                  </div>
+
+                  <div className="space-y-3 rounded-2xl border-2 border-stone-100 dark:border-gray-800 bg-stone-50 dark:bg-gray-900 p-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Repeat className="w-3 h-3" /> Recurring Task
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsRecurring((prev) => !prev)}
+                        className={`relative h-7 w-12 rounded-full transition-all ${isRecurring ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-gray-700'}`}
+                      >
+                        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${isRecurring ? 'left-6' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    {isRecurring && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2">
+                          {(['daily', 'weekly', 'monthly'] as const).map((pattern) => (
+                            <button
+                              key={pattern}
+                              type="button"
+                              onClick={() => setRecurringPattern(pattern)}
+                              className={`py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                recurringPattern === pattern
+                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
+                                  : 'border-stone-200 dark:border-gray-700 text-stone-500'
+                              }`}
+                            >
+                              {pattern}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            min={1}
+                            value={recurringInterval}
+                            onChange={(e) => setRecurringInterval(Math.max(1, Number(e.target.value || 1)))}
+                            placeholder="Repeat every"
+                            className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-xs font-bold outline-none"
+                          />
+                          <input
+                            type="time"
+                            value={recurringDueTime}
+                            onChange={(e) => setRecurringDueTime(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-xs font-bold outline-none"
+                          />
+                        </div>
+
+                        {recurringPattern === 'weekly' && (
+                          <div className="flex flex-wrap gap-2">
+                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => {
+                              const active = recurringDays.includes(idx)
+                              return (
+                                <button
+                                  key={`${day}-${idx}`}
+                                  type="button"
+                                  onClick={() =>
+                                    setRecurringDays((prev) =>
+                                      prev.includes(idx) ? prev.filter((d) => d !== idx) : [...prev, idx]
+                                    )
+                                  }
+                                  className={`h-8 w-8 rounded-full text-[10px] font-black transition-all ${
+                                    active ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-gray-950 border border-stone-200 dark:border-gray-700 text-stone-500'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        <input
+                          type="date"
+                          value={recurrenceEndDate}
+                          onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-xs font-bold outline-none"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
