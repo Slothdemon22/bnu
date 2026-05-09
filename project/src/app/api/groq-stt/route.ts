@@ -7,36 +7,48 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData()
-    const file = formData.get('file') as Blob
+    const fileEntry = formData.get('file')
 
-    if (!file) {
+    if (!(fileEntry instanceof Blob)) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
 
     const apiKey = process.env.API_KEY || ''
-
-    // Create new FormData for Groq API
-    const groqFormData = new FormData()
-    groqFormData.append('file', file, 'audio.webm')
-    groqFormData.append('model', 'whisper-large-v3')
-
-    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: groqFormData
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Groq STT Error:', errorText)
-      return NextResponse.json({ error: 'Failed to transcribe audio' }, { status: 500 })
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Missing API key configuration' }, { status: 500 })
     }
 
-    const data = await response.json()
-    
-    return NextResponse.json({ text: data.text })
+    const file = fileEntry instanceof File
+      ? fileEntry
+      : new File([fileEntry], `audio-${Date.now()}.webm`, { type: fileEntry.type || 'audio/webm' })
+
+    const modelsToTry = ['whisper-large-v3-turbo', 'whisper-large-v3']
+    let lastError = 'Failed to transcribe audio'
+
+    for (const model of modelsToTry) {
+      const groqFormData = new FormData()
+      groqFormData.append('file', file, file.name || 'audio.webm')
+      groqFormData.append('model', model)
+
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: groqFormData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return NextResponse.json({ text: data.text || '' })
+      }
+
+      const errorText = await response.text()
+      lastError = `Model ${model}: ${errorText}`
+      console.error('Groq STT Error:', lastError)
+    }
+
+    return NextResponse.json({ error: lastError }, { status: 500 })
   } catch (error) {
     console.error('STT Proxy Error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

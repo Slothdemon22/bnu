@@ -35,6 +35,7 @@ export function AIBubble() {
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -135,11 +136,26 @@ export function AIBubble() {
     }
   }
 
+  const speakWithBrowserTTS = (text: string) => {
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 1
+    utterance.pitch = 1
+    window.speechSynthesis.speak(utterance)
+  }
+
   const playAudio = async (text: string) => {
     // Strip markdown formatting for cleaner speech
     const cleanText = text.replace(/[*_#`]/g, '')
+    if (!cleanText.trim()) return
     
     try {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause()
+        currentAudioRef.current = null
+      }
+
       const res = await fetch('/api/groq-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,22 +166,36 @@ export function AIBubble() {
         const blob = await res.blob()
         const url = URL.createObjectURL(blob)
         const audio = new Audio(url)
-        audio.play()
+        currentAudioRef.current = audio
+        audio.onended = () => {
+          URL.revokeObjectURL(url)
+          if (currentAudioRef.current === audio) currentAudioRef.current = null
+        }
+        audio.onerror = () => {
+          URL.revokeObjectURL(url)
+          if (currentAudioRef.current === audio) currentAudioRef.current = null
+        }
+
+        try {
+          await audio.play()
+          return
+        } catch (playErr) {
+          console.warn('Groq audio playback blocked, falling back to browser TTS:', playErr)
+          URL.revokeObjectURL(url)
+          if (currentAudioRef.current === audio) currentAudioRef.current = null
+          speakWithBrowserTTS(cleanText)
+          return
+        }
       } else {
         // Fallback to browser TTS if Groq TTS endpoint throws error
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel()
-          const utterance = new SpeechSynthesisUtterance(cleanText)
-          window.speechSynthesis.speak(utterance)
-        }
+        const err = await res.json().catch(() => ({}))
+        console.warn('Groq TTS request failed, using browser TTS fallback:', err.error || 'Unknown error')
+        speakWithBrowserTTS(cleanText)
       }
     } catch (err) {
       // Fallback
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance(cleanText)
-        window.speechSynthesis.speak(utterance)
-      }
+      console.warn('TTS failed, using browser TTS fallback:', err)
+      speakWithBrowserTTS(cleanText)
     }
   }
 
@@ -183,12 +213,21 @@ export function AIBubble() {
       }
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const mimeType = mediaRecorder.mimeType || audioChunksRef.current[0]?.type || 'audio/webm'
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+        const extension = mimeType.includes('mp4') || mimeType.includes('m4a')
+          ? 'm4a'
+          : mimeType.includes('wav')
+            ? 'wav'
+            : mimeType.includes('ogg')
+              ? 'ogg'
+              : 'webm'
+        const audioFile = new File([audioBlob], `recording.${extension}`, { type: mimeType })
         setIsTranscribing(true)
         
         try {
           const formData = new FormData()
-          formData.append('file', audioBlob)
+          formData.append('file', audioFile)
 
           const res = await fetch('/api/groq-stt', {
             method: 'POST',
@@ -200,6 +239,9 @@ export function AIBubble() {
             if (data.text) {
               setInput(prev => (prev + ' ' + data.text).trim())
             }
+          } else {
+            const err = await res.json().catch(() => ({}))
+            console.error('STT request failed:', err.error || 'Unknown STT error')
           }
         } catch (error) {
           console.error('STT Error:', error)

@@ -347,17 +347,30 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
       }
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const mimeType = mediaRecorder.mimeType || audioChunksRef.current[0]?.type || 'audio/webm'
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+        const extension = mimeType.includes('mp4') || mimeType.includes('m4a')
+          ? 'm4a'
+          : mimeType.includes('wav')
+            ? 'wav'
+            : mimeType.includes('ogg')
+              ? 'ogg'
+              : 'webm'
+        const audioFile = new File([audioBlob], `task-dictation.${extension}`, { type: mimeType })
         setLoading(true)
         toast.loading('Analyzing voice instructions...', { id: 'voice-toast' })
         
         try {
           const formData = new FormData()
-          formData.append('file', audioBlob)
+          formData.append('file', audioFile)
 
           const sttRes = await fetch('/api/groq-stt', { method: 'POST', body: formData })
           const sttData = await sttRes.json()
-          
+
+          if (!sttRes.ok) {
+            throw new Error(sttData.error || 'Speech-to-text failed')
+          }
+
           if (sttData.text) {
             const parseRes = await fetch('/api/groq-task-parse', {
               method: 'POST',
