@@ -37,7 +37,7 @@ export async function POST(
     const redirectUri = `${protocol}://${host}/api/auth/google/calendar/callback`
 
     const oauth2Client = new google.auth.OAuth2(
-      process.env['OAUTH-CLIENT_ID'] || process.env.OAUTH_CLIENT_ID,
+      process.env.OAUTH_CLIENT_ID,
       process.env.OAUTH_CLEINT_SECRET || process.env.OAUTH_CLIENT_SECRET,
       redirectUri
     )
