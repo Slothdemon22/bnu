@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   //   ignoreBuildErrors: true,
   // },
 
+
+
   // Suppress React 19 ref warnings from third-party libraries
   reactStrictMode: true,
   onDemandEntries: {

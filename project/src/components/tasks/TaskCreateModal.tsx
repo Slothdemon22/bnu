@@ -965,7 +965,7 @@ export function TaskCreateModal({ slug, task, onClose, onSuccess, initialStep = 
               ))}
             </div>
 
-            {task && task.roomUrl && (workspaceRole === 'admin' || workspaceRole === 'owner' || selectedMemberIds.includes(user?.id)) && (
+            {task && task.roomUrl && (workspaceRole === 'admin' || workspaceRole === 'owner' || (user?.id !== undefined && selectedMemberIds.includes(user.id))) && (
               <a 
                 href={task.roomUrl}
                 target="_blank"

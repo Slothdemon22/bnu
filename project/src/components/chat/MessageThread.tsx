@@ -131,7 +131,7 @@ const MessageThreadComponent = ({
               email={message.author.email}
               imageUrl={message.author.imageUrl}
               role={message.author.role}
-              size={isNested ? "xs" : "sm"}
+              size={isNested ? "sm" : "sm"}
             />
           </div>
 

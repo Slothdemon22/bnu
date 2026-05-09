@@ -158,7 +158,7 @@ export function DashboardSidebar() {
               <div className="flex items-center gap-2">
                 <p className="text-sm font-bold text-stone-900 dark:text-white truncate">{user?.name || 'User'}</p>
                 {user?.isPremium ? (
-                  <Crown className="w-3.5 h-3.5 text-emerald-500" title="Premium User" />
+                  <Crown className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
                   <span className="px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-gray-800 text-stone-500 text-[8px] font-black uppercase tracking-widest border border-stone-200 dark:border-gray-700">Free</span>
                 )}
